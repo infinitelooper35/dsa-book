@@ -21,7 +21,7 @@ async function renderMarkdown(path) {
 async function init() {
   const manifest = JSON.parse(await loadText('./manifest.json'));
 
-  manuscriptBtn.onclick = () => renderMarkdown('../MANUSCRIPT.md');
+  manuscriptBtn.onclick = () => renderMarkdown('./MANUSCRIPT.md');
 
   manifest.pages.forEach((file) => {
     const li = document.createElement('li');
@@ -31,13 +31,13 @@ async function init() {
     a.textContent = file.replace('.md', '');
     a.onclick = (ev) => {
       ev.preventDefault();
-      renderMarkdown(`../pages/${file}`);
+      renderMarkdown(`./pages/${file}`);
     };
     li.appendChild(a);
     pagesEl.appendChild(li);
   });
 
-  renderMarkdown('../MANUSCRIPT.md');
+  renderMarkdown('./MANUSCRIPT.md');
 }
 
 init();
