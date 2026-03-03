@@ -1,30 +1,77 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSA Book — Mr.Peralta</title>
+  <meta name="description" content="Interview-first DSA book, written one page per day." />
   <link rel="stylesheet" href="./styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script defer src="./app.js"></script>
 </head>
 <body>
-  <header>
-    <h1>📘 DSA Book</h1>
-    <p>One page per day • Interview-first style</p>
+  <div id="topProgress" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="emoji">📘</div>
+      <div>
+        <h1>DSA Book</h1>
+        <p>One page per day • Interview-first • Practical</p>
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <button id="themeToggle" class="ghost" title="Toggle theme">🌙 Theme</button>
+      <button id="fontMinus" class="ghost" title="Smaller text">A-</button>
+      <button id="fontPlus" class="ghost" title="Larger text">A+</button>
+      <button id="viewManuscript" class="primary">Read Full Manuscript</button>
+    </div>
   </header>
 
-  <main>
-    <aside>
-      <button id="loadManuscript">View Full Manuscript</button>
-      <h3>Daily Pages</h3>
-      <ul id="pages"></ul>
+  <main class="layout">
+    <aside class="left-panel">
+      <div class="panel-card">
+        <h2>Library</h2>
+        <p class="muted">Find pages fast and keep momentum.</p>
+        <input id="searchInput" type="search" placeholder="Search pages by title/date..." />
+      </div>
+
+      <div class="panel-card stats" id="stats"></div>
+
+      <div class="panel-card page-list-wrap">
+        <div class="list-header">
+          <h3>Daily Pages</h3>
+          <button id="sortToggle" class="tiny">Newest first</button>
+        </div>
+        <ul id="pageList" class="page-list"></ul>
+      </div>
     </aside>
 
-    <section>
-      <article id="content">Loading...</article>
+    <section class="reader">
+      <article id="content" class="content" aria-live="polite">
+        <p>Loading manuscript...</p>
+      </article>
     </section>
-  </main>
 
-  <script src="./app.js"></script>
+    <aside class="right-panel">
+      <div class="panel-card">
+        <h3>On this page</h3>
+        <nav id="toc" class="toc">
+          <p class="muted">Open a page to see sections.</p>
+        </nav>
+      </div>
+
+      <div class="panel-card">
+        <h3>Reader Shortcuts</h3>
+        <ul class="shortcuts">
+          <li><kbd>j</kbd>/<kbd>k</kbd> Next/Prev page</li>
+          <li><kbd>/</kbd> Focus search</li>
+          <li><kbd>m</kbd> Full manuscript</li>
+          <li><kbd>t</kbd> Toggle theme</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
 </body>
 </html>
