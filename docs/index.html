@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DSA Book — Mr.Peralta</title>
   <meta name="description" content="Interview-first DSA book, written one page per day." />
-  <link rel="stylesheet" href="./styles.css?v=20260303b" />
+  <link rel="stylesheet" href="./styles.css?v=20260303c" />
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="./app.js?v=20260303b"></script>
+  <script defer src="./app.js?v=20260303c"></script>
 </head>
 <body>
   <div id="topProgress" aria-hidden="true"></div>
@@ -25,6 +25,7 @@
       <button id="themeToggle" class="ghost" title="Toggle theme">🌙 Theme</button>
       <button id="fontMinus" class="ghost" title="Smaller text">A-</button>
       <button id="fontPlus" class="ghost" title="Larger text">A+</button>
+      <button id="readLatest" class="ghost">Read Latest Page</button>
       <button id="viewManuscript" class="primary">Read Full Manuscript</button>
     </div>
   </header>
@@ -49,6 +50,16 @@
     </aside>
 
     <section class="reader">
+      <div class="reader-toolbar panel-card" id="readerToolbar">
+        <div>
+          <div class="k">Now reading</div>
+          <div id="currentMeta" class="current-meta">Manuscript</div>
+        </div>
+        <div class="row-actions">
+          <button id="prevPage" class="tiny">← Prev</button>
+          <button id="nextPage" class="tiny">Next →</button>
+        </div>
+      </div>
       <article id="content" class="content" aria-live="polite">
         <p>Loading manuscript...</p>
       </article>

@@ -5,6 +5,10 @@ const els = {
   stats: document.getElementById('stats'),
   sortToggle: document.getElementById('sortToggle'),
   manuscriptBtn: document.getElementById('viewManuscript'),
+  readLatestBtn: document.getElementById('readLatest'),
+  prevPageBtn: document.getElementById('prevPage'),
+  nextPageBtn: document.getElementById('nextPage'),
+  currentMeta: document.getElementById('currentMeta'),
   toc: document.getElementById('toc'),
   progress: document.getElementById('topProgress'),
   themeToggle: document.getElementById('themeToggle'),
@@ -19,6 +23,7 @@ const state = {
   sortNewest: true,
   fontSize: Number(localStorage.getItem('dsa_font') || 18),
   theme: localStorage.getItem('dsa_theme') || 'dark',
+  mode: 'manuscript',
 };
 
 function setTheme(theme) {
@@ -43,6 +48,15 @@ async function loadText(path) {
 function estimateReadMinutes(text) {
   const words = (text.match(/\S+/g) || []).length;
   return Math.max(1, Math.round(words / 220));
+}
+
+function getTeaser(md) {
+  const withoutHeadings = md
+    .replace(/^#.*$/gm, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`/g, '')
+    .trim();
+  return withoutHeadings.slice(0, 130) + (withoutHeadings.length > 130 ? '…' : '');
 }
 
 function slugify(text) {
@@ -99,7 +113,7 @@ async function renderMarkdown(path, smooth = true) {
 function renderStats() {
   const count = state.pages.length;
   const totalRead = state.pages.reduce((a, p) => a + p.readMin, 0);
-  const latest = state.pages[0]?.date || '—';
+  const latest = [...state.pages].sort((a, b) => (a.file < b.file ? 1 : -1))[0]?.date || '—';
   els.stats.innerHTML = `
     <div class="stat"><div class="k">Pages</div><div class="v">${count}</div></div>
     <div class="stat"><div class="k">Read time</div><div class="v">${totalRead}m</div></div>
@@ -115,11 +129,34 @@ function setActiveByVisibleIndex(i) {
   });
 }
 
+function updateCurrentMeta() {
+  if (state.mode === 'manuscript' || state.activeIndex < 0 || !state.visible[state.activeIndex]) {
+    els.currentMeta.textContent = 'Full Manuscript';
+    return;
+  }
+  const p = state.visible[state.activeIndex];
+  els.currentMeta.textContent = `${p.title} • ${p.readMin} min`;
+}
+
 function openVisibleIndex(i) {
   if (i < 0 || i >= state.visible.length) return;
   const page = state.visible[i];
+  state.mode = 'page';
   setActiveByVisibleIndex(i);
+  updateCurrentMeta();
   renderMarkdown(`./pages/${page.file}`);
+}
+
+function openManuscript() {
+  state.mode = 'manuscript';
+  setActiveByVisibleIndex(-1);
+  updateCurrentMeta();
+  renderMarkdown('./MANUSCRIPT.md');
+}
+
+function openLatestPage() {
+  if (!state.visible.length) return;
+  openVisibleIndex(0);
 }
 
 function renderPageList() {
@@ -143,6 +180,7 @@ function renderPageList() {
     li.innerHTML = `
       <div class="page-title">${p.title}</div>
       <div class="page-meta">${p.date} • ${p.readMin} min read</div>
+      <div class="page-teaser">${p.teaser}</div>
     `;
     li.onclick = () => openVisibleIndex(idx);
     els.pageList.appendChild(li);
@@ -156,6 +194,7 @@ function renderPageList() {
   }
 
   state.activeIndex = -1;
+  updateCurrentMeta();
 }
 
 function wireEvents() {
@@ -165,10 +204,12 @@ function wireEvents() {
     els.sortToggle.textContent = state.sortNewest ? 'Newest first' : 'Oldest first';
     renderPageList();
   });
-  els.manuscriptBtn.addEventListener('click', () => {
-    setActiveByVisibleIndex(-1);
-    renderMarkdown('./MANUSCRIPT.md');
-  });
+
+  els.manuscriptBtn.addEventListener('click', openManuscript);
+  els.readLatestBtn.addEventListener('click', openLatestPage);
+  els.prevPageBtn.addEventListener('click', () => openVisibleIndex(Math.max(0, state.activeIndex - 1)));
+  els.nextPageBtn.addEventListener('click', () => openVisibleIndex(Math.min(state.visible.length - 1, state.activeIndex + 1)));
+
   els.themeToggle.addEventListener('click', () => setTheme(state.theme === 'dark' ? 'light' : 'dark'));
   els.fontPlus.addEventListener('click', () => setFontSize(state.fontSize + 1));
   els.fontMinus.addEventListener('click', () => setFontSize(state.fontSize - 1));
@@ -183,14 +224,13 @@ function wireEvents() {
       return;
     }
     if (e.key.toLowerCase() === 'm') {
-      els.manuscriptBtn.click();
+      openManuscript();
       return;
     }
     if (e.key.toLowerCase() === 't') {
       els.themeToggle.click();
       return;
     }
-
     if (!state.visible.length) return;
     if (e.key.toLowerCase() === 'j' || e.key.toLowerCase() === 'n') {
       const next = Math.min(state.visible.length - 1, (state.activeIndex < 0 ? 0 : state.activeIndex + 1));
@@ -216,6 +256,7 @@ async function hydratePages() {
         date: file.replace('.md', ''),
         title: firstHeading,
         readMin: estimateReadMinutes(md),
+        teaser: getTeaser(md),
       };
     })
   );
@@ -230,7 +271,7 @@ async function init() {
   await hydratePages();
   renderStats();
   renderPageList();
-  await renderMarkdown('./MANUSCRIPT.md', false);
+  openLatestPage();
 }
 
 init();
