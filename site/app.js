@@ -16,6 +16,7 @@ const els = {
   prevBtn: document.getElementById('prevBtn'),
   nextBtn: document.getElementById('nextBtn'),
   manuscriptBtn: document.getElementById('manuscriptBtn'),
+  tocFab: document.getElementById('tocFab'),
 };
 
 const state = {
@@ -190,6 +191,7 @@ function wireEvents() {
   els.nextBtn.onclick = () => openPage(Math.min(state.filtered.length - 1, state.currentIndex + 1));
   els.manuscriptBtn.onclick = () => openManuscript();
   els.search.oninput = renderPageList;
+  els.tocFab.onclick = () => setLibraryOpen(!state.libraryOpen);
 
   // Swipe to flip pages on touch devices
   let touchStartX = 0;
