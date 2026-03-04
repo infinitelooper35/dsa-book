@@ -16,7 +16,6 @@ const els = {
   prevBtn: document.getElementById('prevBtn'),
   nextBtn: document.getElementById('nextBtn'),
   manuscriptBtn: document.getElementById('manuscriptBtn'),
-  bookShell: document.getElementById('bookShell'),
 };
 
 const state = {
@@ -25,6 +24,7 @@ const state = {
   currentIndex: -1,
   mode: 'cover', // cover | page | manuscript
   theme: localStorage.getItem('book_theme') || 'dark',
+  libraryOpen: localStorage.getItem('book_library_open') !== '0',
 };
 
 function setTheme(theme) {
@@ -32,6 +32,12 @@ function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('book_theme', theme);
   els.themeBtn.textContent = theme === 'dark' ? '🌙 Theme' : '☀️ Theme';
+}
+
+function setLibraryOpen(open) {
+  state.libraryOpen = open;
+  els.library.classList.toggle('hidden', !open);
+  localStorage.setItem('book_library_open', open ? '1' : '0');
 }
 
 async function loadText(path) {
@@ -68,16 +74,34 @@ function showBook() {
   els.bookView.classList.remove('hidden');
 }
 
+function setLoading(message = 'Loading page…') {
+  els.content.innerHTML = `<p>${message}</p>`;
+}
+
+function updateButtons() {
+  const atStart = state.currentIndex <= 0;
+  const atEnd = state.currentIndex >= state.filtered.length - 1;
+  els.prevBtn.disabled = state.mode !== 'page' || atStart;
+  els.nextBtn.disabled = state.mode !== 'page' || atEnd;
+}
+
 function updateMeta() {
   if (state.mode === 'manuscript') {
     els.pageMeta.textContent = 'Full Manuscript';
     els.pageNumber.textContent = 'Manuscript';
+    updateButtons();
     return;
   }
   const p = state.filtered[state.currentIndex];
-  if (!p) return;
+  if (!p) {
+    els.pageMeta.textContent = 'No page selected';
+    els.pageNumber.textContent = '—';
+    updateButtons();
+    return;
+  }
   els.pageMeta.textContent = `${p.title} • ${p.read} min read`;
   els.pageNumber.textContent = `Page ${state.currentIndex + 1} / ${state.filtered.length}`;
+  updateButtons();
 }
 
 function animateFlip() {
@@ -88,11 +112,13 @@ function animateFlip() {
 
 async function renderMarkdown(md) {
   els.content.innerHTML = marked.parse(md);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function openManuscript() {
   showBook();
   state.mode = 'manuscript';
+  setLoading('Loading manuscript…');
   const md = await loadText('./MANUSCRIPT.md');
   animateFlip();
   await renderMarkdown(md);
@@ -106,16 +132,28 @@ async function openPage(index) {
   state.mode = 'page';
   state.currentIndex = index;
   const p = state.filtered[index];
+  setLoading('Loading chapter…');
   animateFlip();
   await renderMarkdown(p.md);
   updateMeta();
   [...els.pageList.querySelectorAll('li')].forEach((li, i) => li.classList.toggle('active', i === index));
+
+  // mobile usability: auto-close library after selection
+  if (window.innerWidth < 980) setLibraryOpen(false);
 }
 
 function renderPageList() {
   const q = els.search.value.trim().toLowerCase();
   state.filtered = state.pages.filter(p => p.title.toLowerCase().includes(q) || p.date.includes(q));
   els.pageList.innerHTML = '';
+
+  if (!state.filtered.length) {
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="page-title">No matching pages</div><div class="page-meta">Try another keyword/date.</div>`;
+    li.style.opacity = '.8';
+    els.pageList.appendChild(li);
+    return;
+  }
 
   state.filtered.forEach((p, i) => {
     const li = document.createElement('li');
@@ -144,7 +182,7 @@ async function hydratePages() {
 
 function wireEvents() {
   els.homeBtn.onclick = showCover;
-  els.libraryBtn.onclick = () => els.library.classList.toggle('hidden');
+  els.libraryBtn.onclick = () => setLibraryOpen(!state.libraryOpen);
   els.themeBtn.onclick = () => setTheme(state.theme === 'dark' ? 'light' : 'dark');
   els.startLatestBtn.onclick = () => openPage(0);
   els.startManuscriptBtn.onclick = () => openManuscript();
@@ -154,18 +192,30 @@ function wireEvents() {
   els.search.oninput = renderPageList;
 
   window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'c') {
+      showCover();
+      return;
+    }
     if (state.mode === 'cover') return;
-    if (e.key === 'ArrowRight') openPage(Math.min(state.filtered.length - 1, state.currentIndex + 1));
-    if (e.key === 'ArrowLeft') openPage(Math.max(0, state.currentIndex - 1));
+    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'j') openPage(Math.min(state.filtered.length - 1, state.currentIndex + 1));
+    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'k') openPage(Math.max(0, state.currentIndex - 1));
+    if (e.key.toLowerCase() === 'm') openManuscript();
+    if (e.key === '/') {
+      e.preventDefault();
+      setLibraryOpen(true);
+      els.search.focus();
+    }
   });
 }
 
 async function init() {
   setTheme(state.theme);
   wireEvents();
+  setLibraryOpen(state.libraryOpen);
   await hydratePages();
   renderCoverStats();
   renderPageList();
+  updateMeta();
   showCover();
 }
 
