@@ -468,3 +468,85 @@ Same structure solves:
 - Largest Rectangle in Histogram (variant with sentinel handling)
 
 Interview move: after coding, explicitly say, “I used a monotonic decreasing stack of unresolved indices; each element is processed at most twice.” That’s concise, correct, and sounds senior.
+
+# Page 8 — Binary Search on Answer: Optimize Without Scanning Every Possibility
+
+A lot of interview problems don’t ask you to find an element — they ask you to find the **smallest/largest feasible value**. That’s your cue for binary search on answer.
+
+Use this pattern when:
+- the answer is numeric (time, capacity, speed, threshold)
+- you can write a `feasible(x)` check
+- feasibility is monotonic (if `x` works, all larger/smaller values also work)
+
+If you miss monotonicity, you’ll brute-force and time out.
+
+## Interview Case: Koko Eating Bananas
+
+Classic prompt: piles of bananas, `h` hours, choose minimum eating speed `k` so all bananas are finished in time.
+
+### 1) Baseline reasoning
+Brute force tries every speed from 1 to `max(piles)`, running a full check each time.
+- Time: `O(max(piles) * n)`
+- Too slow when pile sizes are large.
+
+### 2) Spot monotonicity
+Define:
+- `feasible(k) = total_hours_needed_at_speed_k <= h`
+
+As `k` increases, required hours never increase. So feasibility flips once:
+- slow speeds: not feasible
+- fast enough speeds: feasible
+
+That one-way boundary is exactly what binary search needs.
+
+### 3) Tight search range
+- `lo = 1`
+- `hi = max(piles)`
+
+Then search for the **leftmost feasible** speed.
+
+```python
+import math
+
+def min_eating_speed(piles: list[int], h: int) -> int:
+    def feasible(k: int) -> bool:
+        hours = 0
+        for p in piles:
+            hours += math.ceil(p / k)
+        return hours <= h
+
+    lo, hi = 1, max(piles)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if feasible(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+```
+
+Complexity:
+- Feasibility check: `O(n)`
+- Binary search steps: `O(log max(piles))`
+- Total: `O(n log M)` where `M = max(piles)`
+
+## Interview narration that sounds senior
+
+Use this script:
+1. “I’ll binary-search the answer, not the array.”
+2. “Predicate is `feasible(k)`: can we finish within `h` hours at speed `k`?”
+3. “Feasibility is monotonic, so there’s a boundary from false to true.”
+4. “I’ll return the leftmost true value.”
+
+## Common mistakes
+
+1. **Returning `mid` early when feasible**
+   You still need to check smaller feasible candidates.
+
+2. **Using floating-point for hours**
+   Use integer ceil math (`(p + k - 1) // k`) or `math.ceil`; avoid precision issues.
+
+3. **Wrong search bounds**
+   If bounds don’t include the true answer, binary search quietly lies.
+
+Master this once, and you can reuse it for shipping capacity, minimum days, split array largest sum, and many “minimum X such that condition holds” problems.
