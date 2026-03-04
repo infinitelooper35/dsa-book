@@ -55,7 +55,7 @@ function extractTitle(md, fallback) {
 function renderCoverStats() {
   const total = state.pages.length;
   const mins = state.pages.reduce((a, p) => a + p.read, 0);
-  const latest = state.pages[0]?.date || '—';
+  const latest = state.pages[state.pages.length - 1]?.date || '—';
   els.coverStats.innerHTML = `
     <div class="cover-stat"><div class="k">Pages</div><div class="v">${total}</div></div>
     <div class="cover-stat"><div class="k">Read Time</div><div class="v">${mins}m</div></div>
@@ -165,7 +165,7 @@ function renderPageList() {
 
 async function hydratePages() {
   const manifest = JSON.parse(await loadText('./manifest.json'));
-  const files = (manifest.pages || []).sort().reverse(); // newest first
+  const files = (manifest.pages || []).sort(); // oldest first (book order)
   const data = [];
   for (const file of files) {
     const md = await loadText(`./pages/${file}`);
