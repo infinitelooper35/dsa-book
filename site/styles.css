@@ -193,6 +193,7 @@ button.tiny { padding: 6px 10px; font-size: 12px; }
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.06), 0 10px 24px rgba(0,0,0,.25);
   font-size: 18px;
   line-height: 1.75;
+  touch-action: pan-y;
 }
 .paper.flipping { animation: flip .25s ease; transform-origin: left center; }
 @keyframes flip {

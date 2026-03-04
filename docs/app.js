@@ -191,6 +191,32 @@ function wireEvents() {
   els.manuscriptBtn.onclick = () => openManuscript();
   els.search.oninput = renderPageList;
 
+  // Swipe to flip pages on touch devices
+  let touchStartX = 0;
+  let touchStartY = 0;
+  els.content.addEventListener('touchstart', (e) => {
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+  }, { passive: true });
+
+  els.content.addEventListener('touchend', (e) => {
+    if (state.mode !== 'page') return;
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    // horizontal swipe only
+    if (absX < 50 || absY > 70 || absY > absX) return;
+
+    if (dx < 0) openPage(Math.min(state.filtered.length - 1, state.currentIndex + 1)); // swipe left => next
+    if (dx > 0) openPage(Math.max(0, state.currentIndex - 1)); // swipe right => prev
+  }, { passive: true });
+
   window.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() === 'c') {
       showCover();
