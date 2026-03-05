@@ -16,6 +16,10 @@ ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:
 .visual.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:6px} .visual.cells>div{border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center;font-weight:700}
 .visual.table>div{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0} .visual.table b{color:#cfe3ff}
 .visual.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px} .visual.grid>div{height:54px;border:1px solid var(--line);border-radius:8px} .visual.grid .hot{background:linear-gradient(180deg,var(--accent),#8ec4ff)}
+.visual.node{display:grid;justify-items:center;gap:8px} .visual.node .n{width:56px;height:56px;border:1px solid var(--line);border-radius:999px;display:grid;place-items:center;font-weight:800} .visual.node .root{background:linear-gradient(180deg,var(--accent),#8ec4ff);color:#0e1730} .visual.node .links{display:flex;gap:44px} .visual.node .links span{display:block;width:2px;height:18px;background:var(--line)} .visual.node .row{display:flex;gap:26px}
+.visual.steps{display:grid;gap:8px} .visual.steps>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.visual.queue{display:flex;gap:8px;flex-wrap:wrap} .visual.queue .q{min-width:48px;text-align:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.04)}
+.visual.balance{display:grid;grid-template-columns:1fr 1fr;gap:8px} .visual.balance>div{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center} .visual.balance p{margin:.4em 0 0;color:#cfe3ff;font-weight:800}
 .visual.bars{display:grid;gap:8px} .visual.bars span{display:block;height:16px;background:linear-gradient(90deg,var(--accent),#8ec4ff);border-radius:999px}
 .visual.ring{height:180px;border-radius:50%;border:8px solid var(--accent);display:grid;place-items:center;font-weight:800;text-align:center;padding:20px}
 .badge{display:inline-block;border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px} .author{margin-top:22px;color:var(--muted);font-size:14px}
@@ -129,14 +133,12 @@ ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:
         <ul><li>Balanced trees preserve logarithmic behavior.</li>
 <li>Unbalanced trees can degrade to linked-list-like O(n) behavior.</li></ul>
         <aside class="viz">
-    <div class='visual bars'>
-      <span style='width:90%'></span>
-      <span style='width:70%'></span>
-      <span style='width:55%'></span>
-      <span style='width:35%'></span>
-    </div>
-    <p class='v-caption'>Section snapshot</p>
-    </aside>
+        <div class='visual balance'>
+          <div><b>Balanced</b><p>O(log n)</p></div>
+          <div><b>Unbalanced</b><p>O(n)</p></div>
+        </div>
+        <p class='v-caption'>Shape affects performance</p>
+        </aside>
       </div>
     </section>
     
@@ -146,14 +148,12 @@ ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:
       <div class="split">
         <ul><li>Full: each node has 0 or 2 children - Complete: levels filled left-to-right except possibly the last Heaps rely on complete binary tree structure.</li></ul>
         <aside class="viz">
-    <div class='visual bars'>
-      <span style='width:90%'></span>
-      <span style='width:70%'></span>
-      <span style='width:55%'></span>
-      <span style='width:35%'></span>
-    </div>
-    <p class='v-caption'>Section snapshot</p>
-    </aside>
+        <div class='visual table'>
+          <div><span>Full tree</span><b>0 or 2 children</b></div>
+          <div><span>Complete tree</span><b>left-filled levels</b></div>
+        </div>
+        <p class='v-caption'>Structural constraints for tree types</p>
+        </aside>
       </div>
     </section>
     
@@ -164,14 +164,13 @@ ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:
         <ul><li>At the core, trees are nodes with pointers/references to children.</li>
 <li>Binary trees use left/right pointers; N-ary trees use a children list.</li></ul>
         <aside class="viz">
-    <div class='visual bars'>
-      <span style='width:90%'></span>
-      <span style='width:70%'></span>
-      <span style='width:55%'></span>
-      <span style='width:35%'></span>
-    </div>
-    <p class='v-caption'>Section snapshot</p>
-    </aside>
+        <div class='visual node'>
+          <div class='n root'>10</div>
+          <div class='links'><span></span><span></span></div>
+          <div class='row'><div class='n'>5</div><div class='n'>14</div></div>
+        </div>
+        <p class='v-caption'>Node with left/right child references</p>
+        </aside>
       </div>
     </section>
     
@@ -182,13 +181,12 @@ ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:
         <ul><li>DFS explores depth before breadth.</li>
 <li>Pre-order: node → left → right - In-order: left → node → right - Post-order: left → right → node Complexity: O(n) time, O(h) space.</li></ul>
         <aside class="viz">
-        <div class='visual table'>
-          <div><span>Indexing</span><b>O(1)</b></div>
-          <div><span>Append</span><b>O(1)*</b></div>
-          <div><span>Middle Insert</span><b>O(n)</b></div>
-          <div><span>Binary Search</span><b>O(log n)</b></div>
+        <div class='visual steps'>
+          <div>Pre-order: node → left → right</div>
+          <div>In-order: left → node → right</div>
+          <div>Post-order: left → right → node</div>
         </div>
-        <p class='v-caption'>Complexity quick sheet</p>
+        <p class='v-caption'>DFS traversal orders</p>
         </aside>
       </div>
     </section>
@@ -201,13 +199,10 @@ ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:
 <li>Use for level-order traversal, shortest path in unweighted trees, min depth style questions.</li>
 <li>Complexity: O(n) time, O(w) space.</li></ul>
         <aside class="viz">
-        <div class='visual table'>
-          <div><span>Indexing</span><b>O(1)</b></div>
-          <div><span>Append</span><b>O(1)*</b></div>
-          <div><span>Middle Insert</span><b>O(n)</b></div>
-          <div><span>Binary Search</span><b>O(log n)</b></div>
+        <div class='visual queue'>
+          <div class='q'>A</div><div class='q'>B</div><div class='q'>C</div><div class='q'>D</div>
         </div>
-        <p class='v-caption'>Complexity quick sheet</p>
+        <p class='v-caption'>Level-order traversal with a queue</p>
         </aside>
       </div>
     </section>
