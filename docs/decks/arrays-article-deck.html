@@ -1,152 +1,24 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Arrays — From Memory Model to Interview Patterns</title>
-  <style>
-    :root { --bg:#0a1022; --bg2:#141d3a; --text:#ecf2ff; --muted:#a9bce8; --card:#0f1630; --line:#2b3b70; --accent:#5da4ff; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:linear-gradient(140deg,var(--bg),var(--bg2)); color:var(--text); overflow:hidden; }
-    .deck { width:100vw; height:100vh; position:relative; }
-    .slide { display:none; width:100%; height:100%; padding:56px 72px; }
-    .slide.active { display:block; animation:fade .22s ease; }
-    .cover h1 { font-size: clamp(40px, 7vw, 72px); line-height:1.05; margin:.2em 0; }
-    h2 { font-size: clamp(34px, 5vw, 52px); margin:.1em 0 .2em; }
-    .sub { color:var(--muted); font-size: clamp(18px,2.2vw,26px); margin-bottom:20px; }
-    ul { margin:0; padding-left:1.2em; max-width:1000px; }
-    li { font-size: clamp(22px,2.4vw,34px); line-height:1.35; margin:.4em 0; }
-    .badge { display:inline-block; border:1px solid var(--line); padding:6px 10px; border-radius:999px; color:var(--muted); font-size:13px; }
-    .author { margin-top:24px; color:var(--muted); font-size:16px; }
-    .hud { position:fixed; bottom:14px; left:14px; right:14px; display:flex; align-items:center; gap:8px; }
-    .btn { border:1px solid var(--line); background:var(--card); color:var(--text); border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:600; }
-    .spacer { flex:1; }
-    .counter { color:var(--muted); font-size:13px; }
-    .progress { height:5px; background:#1c2851; border-radius:999px; overflow:hidden; min-width:170px; }
-    .progress > div { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#8cc3ff); }
-    @keyframes fade { from { opacity:.15; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-    @media (max-width: 900px) { .slide { padding:26px 20px; } .hud { bottom:8px; left:8px; right:8px; } li { font-size:24px; } }
-  </style>
-</head>
-<body>
-  <div class="deck" id="deck">
-    
-        <section class="slide cover">
-          <div class="badge">Auto-generated deck</div>
-          <h1>Arrays — From Memory Model to Interview Patterns</h1>
-          <p class="sub">Based on jamesperalta.com Learn/DSA Arrays</p>
-          <ul><li>Arrays are contiguous memory structures that enable O(1) indexing via base+index math</li><li>Dynamic arrays (Python list/ArrayList/vector) resize and make append amortized O(1)</li><li>Inserting/deleting in the middle is O(n) due to shifting</li></ul>
-          <div class="author">By James Peralta</div>
-        </section>
-        
-    <section class="slide"> 
-      <h2>Problem</h2>
-      <p class="sub">Why this matters now</p>
-      <ul><li>Arrays are contiguous memory structures that enable O(1) indexing via base+index math</li>
-<li>Current workflows are fragmented</li>
-<li>Impact compounds with scale</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>Core Idea</h2>
-      <p class="sub">The proposed solution</p>
-      <ul><li>Dynamic arrays (Python list/ArrayList/vector) resize and make append amortized O(1)</li>
-<li>Simple UX, strong defaults</li>
-<li>Automate repetitive steps</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>How It Works</h2>
-      <p class="sub">Three-step flow</p>
-      <ul><li>Input</li>
-<li>Intelligent processing</li>
-<li>Clear output and actions</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>Architecture</h2>
-      <p class="sub">System view</p>
-      <ul><li>Inserting/deleting in the middle is O(n) due to shifting</li>
-<li>Reliable orchestration</li>
-<li>Observability and fail-safes</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>Use Cases</h2>
-      <p class="sub">Who benefits first</p>
-      <ul><li>Searching is O(n) unless sorted where binary search is O(log n)</li>
-<li>Primary persona + top workflow</li>
-<li>Expansion paths</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>Roadmap</h2>
-      <p class="sub">Execution plan</p>
-      <ul><li>Phase 1: MVP</li>
-<li>Phase 2: feedback loop</li>
-<li>Phase 3: scale + polish</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>Success Metrics</h2>
-      <p class="sub">How we know this works</p>
-      <ul><li>Activation</li>
-<li>Retention</li>
-<li>Time saved</li>
-<li>Quality score</li></ul>
-    </section>
-    
-    <section class="slide"> 
-      <h2>Risks &amp; Mitigations</h2>
-      <p class="sub">What could go wrong</p>
-      <ul><li>Most sorting is O(n log n), with O(n) possible in constrained cases like counting sort</li>
-<li>Operational risk → guardrails</li>
-<li>Adoption risk → onboarding</li></ul>
-    </section>
-    
-        <section class="slide">
-          <h2>Next Step</h2>
-          <p class="sub">Pick one milestone and execute this week</p>
-          <ul>
-            <li>Decide owner + deadline</li>
-            <li>Ship a demo</li>
-            <li>Collect feedback and iterate</li>
-          </ul>
-        </section>
-        
-  </div>
-
-  <div class="hud">
-    <button class="btn" id="prev">← Prev</button>
-    <button class="btn" id="next">Next →</button>
-    <div class="spacer"></div>
-    <div class="progress"><div id="bar"></div></div>
-    <div class="counter" id="counter">1 / 1</div>
-  </div>
-
-  <script>
-    const slides=[...document.querySelectorAll('.slide')];
-    let i=0;
-    const counter=document.getElementById('counter');
-    const bar=document.getElementById('bar');
-    function show(idx){
-      i=Math.max(0,Math.min(slides.length-1,idx));
-      slides.forEach((s,k)=>s.classList.toggle('active',k===i));
-      counter.textContent=`${i+1} / ${slides.length}`;
-      bar.style.width=`${((i+1)/slides.length)*100}%`;
-    }
-    document.getElementById('prev').onclick=()=>show(i-1);
-    document.getElementById('next').onclick=()=>show(i+1);
-    window.addEventListener('keydown',e=>{
-      if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown') show(i+1);
-      if(e.key==='ArrowLeft'||e.key==='PageUp') show(i-1);
-      if(e.key==='Home') show(0);
-      if(e.key==='End') show(slides.length-1);
-    });
-    let sx=0, sy=0;
-    window.addEventListener('touchstart',e=>{const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY;},{passive:true});
-    window.addEventListener('touchend',e=>{const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy; if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){ if(dx<0)show(i+1); else show(i-1); } },{passive:true});
-    show(0);
-  </script>
-</body>
-</html>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arrays — Article Walkthrough</title>
+<style>
+body{margin:0;font-family:Inter,system-ui;background:linear-gradient(140deg,#0a1022,#151f3d);color:#eef3ff;overflow:hidden}
+.slide{display:none;width:100vw;height:100vh;padding:56px 72px;box-sizing:border-box}
+.slide.active{display:block;animation:fade .2s ease}
+h2{font-size:clamp(34px,5vw,54px);line-height:1.1;margin:.1em 0 .2em} .sub{color:#aac0ef;font-size:clamp(18px,2.2vw,26px)}
+ul{max-width:1080px} li{font-size:clamp(22px,2.3vw,33px);line-height:1.35;margin:.45em 0}
+.hud{position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:8px;align-items:center}
+button{border:1px solid #2a3a71;background:#101735;color:#eef3ff;border-radius:10px;padding:8px 12px;font-weight:600}
+.counter{margin-left:auto;color:#aac0ef;font-size:13px} .progress{width:170px;height:5px;background:#1d2953;border-radius:999px;overflow:hidden} .bar{height:100%;width:0%;background:linear-gradient(90deg,#5da4ff,#8cc3ff)}
+@keyframes fade{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:900px){.slide{padding:24px 20px} li{font-size:24px}}
+</style></head><body>
+<section class="slide active"><h2>Arrays</h2><p class="sub">Article overview</p><ul><li>Arrays are the first DSA concept to truly understand.</li><li>Most other data structures either build on arrays or fix their weaknesses.</li><li>Key focus: memory model, operation costs, and interview impact.</li></ul></section><section class="slide"><h2>What is an array (or list)?</h2><p class="sub">Foundational definition</p><ul><li>An array stores multiple values in a specific order.</li><li>Everyday examples: TODO list, friends list, input sequence.</li><li>Conceptually simple, but performance behavior matters.</li></ul></section><section class="slide"><h2>Creating an array blocks off a contiguous block of memory</h2><p class="sub">Under-the-hood model</p><ul><li>Arrays allocate one contiguous memory block for all elements.</li><li>Contiguity is the most important property to remember.</li><li>This enables fast access but makes middle edits expensive.</li></ul></section><section class="slide"><h2>Indexing an array is O(1) time</h2><p class="sub">Why constant-time access works</p><ul><li>Address math: base + index * element_size.</li><li>No traversal is needed for arr[0], arr[5], or arr[n-1].</li><li>That is why indexing is constant-time.</li></ul></section><section class="slide"><h2>Most programming languages provide a dynamic array implementation</h2><p class="sub">Python list / Java ArrayList / C++ vector</p><ul><li>Dynamic arrays still use contiguous memory.</li><li>When capacity runs out, runtime allocates a larger block and copies elements.</li><li>This resize cost is occasional, not constant.</li></ul></section><section class="slide"><h2>Inserting at the end is O(1) amortized</h2><p class="sub">Append behavior</p><ul><li>Most appends are O(1): write into next free slot.</li><li>Resize moments cost O(n) due to copying.</li><li>Across many operations, average append cost is amortized O(1).</li></ul></section><section class="slide"><h2>Inserting anywhere else is O(n)</h2><p class="sub">Shift cost</p><ul><li>Middle insertion requires shifting right-side elements.</li><li>Order and contiguity must be preserved.</li><li>Worst-case insertion away from end is linear.</li></ul></section><section class="slide"><h2>Deleting from the end is O(1)</h2><p class="sub">Cheap removal</p><ul><li>Pop from end only decreases logical size.</li><li>No shifting is required.</li><li>This is constant-time.</li></ul></section><section class="slide"><h2>Deleting from anywhere else is O(n)</h2><p class="sub">Gap-filling shift</p><ul><li>Middle deletion shifts right-side elements left.</li><li>The farther the gap, the more movement required.</li><li>Hence linear-time behavior.</li></ul></section><section class="slide"><h2>Searching is O(n)… unless sorted</h2><p class="sub">Linear vs binary search</p><ul><li>Unsorted arrays require linear scan: O(n).</li><li>Sorted arrays enable binary search: O(log n).</li><li>Sortedness changes the search strategy completely.</li></ul></section><section class="slide"><h2>Sorting is usually O(n log n)</h2><p class="sub">General-purpose sorting</p><ul><li>Typical practical sorts (QuickSort/MergeSort/HeapSort/Timsort) are O(n log n).</li><li>Quadratic sorts are mostly educational in modern practice.</li><li>Complexity awareness is critical in interviews.</li></ul></section><section class="slide"><h2>Sometimes you can sort in O(n)</h2><p class="sub">Constraint-driven optimization</p><ul><li>If values are bounded (like small integer range), counting sort can reach O(n).</li><li>This is often the difference between pass and TLE.</li><li>Use constraints as design hints.</li></ul></section><section class="slide"><h2>Know common array ops in your language</h2><p class="sub">Python list operation costs</p><ul><li>len: O(1), append: O(1) amortized, pop from end: O(1).</li><li>insert/remove/min/max usually involve O(n) behavior.</li><li>Operation-cost literacy improves solution quality before coding.</li></ul></section><section class="slide"><h2>2D arrays (matrices)</h2><p class="sub">Array of arrays</p><ul><li>Used for grids, games, maps, image-like data.</li><li>Access remains O(1): grid[row][col].</li><li>Nested loops can quickly increase runtime.</li></ul></section><section class="slide"><h2>Final takeaway</h2><p class="sub">Why this matters</p><ul><li>Master arrays first: indexing, shifting, and amortized behavior.</li><li>These mechanics appear repeatedly in interview problems.</li><li>Everything else in DSA builds on this mental model.</li></ul></section>
+<div class="hud"><button id="p">← Prev</button><button id="n">Next →</button><div class="progress"><div class="bar" id="b"></div></div><div class="counter" id="c"></div></div>
+<script>
+const s=[...document.querySelectorAll('.slide')];let i=0;const c=document.getElementById('c'),b=document.getElementById('b');
+function show(x){i=Math.max(0,Math.min(s.length-1,x));s.forEach((el,k)=>el.classList.toggle('active',k===i));c.textContent=`${i+1} / ${s.length}`;b.style.width=`${((i+1)/s.length)*100}%`;}
+document.getElementById('p').onclick=()=>show(i-1);document.getElementById('n').onclick=()=>show(i+1);
+window.addEventListener('keydown',e=>{if(['ArrowRight',' ','PageDown'].includes(e.key))show(i+1);if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);});
+let sx=0,sy=0;window.addEventListener('touchstart',e=>{const t=e.changedTouches[0];sx=t.clientX;sy=t.clientY;},{passive:true});
+window.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){dx<0?show(i+1):show(i-1)}},{passive:true});
+show(0);
+</script></body></html>
