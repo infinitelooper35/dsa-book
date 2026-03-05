@@ -468,3 +468,167 @@ Same structure solves:
 - Largest Rectangle in Histogram (variant with sentinel handling)
 
 Interview move: after coding, explicitly say, “I used a monotonic decreasing stack of unresolved indices; each element is processed at most twice.” That’s concise, correct, and sounds senior.
+
+# Page 8 — Binary Search on Answer: Optimize Without Scanning Every Possibility
+
+A lot of interview problems don’t ask you to find an element — they ask you to find the **smallest/largest feasible value**. That’s your cue for binary search on answer.
+
+Use this pattern when:
+- the answer is numeric (time, capacity, speed, threshold)
+- you can write a `feasible(x)` check
+- feasibility is monotonic (if `x` works, all larger/smaller values also work)
+
+If you miss monotonicity, you’ll brute-force and time out.
+
+## Interview Case: Koko Eating Bananas
+
+Classic prompt: piles of bananas, `h` hours, choose minimum eating speed `k` so all bananas are finished in time.
+
+### 1) Baseline reasoning
+Brute force tries every speed from 1 to `max(piles)`, running a full check each time.
+- Time: `O(max(piles) * n)`
+- Too slow when pile sizes are large.
+
+### 2) Spot monotonicity
+Define:
+- `feasible(k) = total_hours_needed_at_speed_k <= h`
+
+As `k` increases, required hours never increase. So feasibility flips once:
+- slow speeds: not feasible
+- fast enough speeds: feasible
+
+That one-way boundary is exactly what binary search needs.
+
+### 3) Tight search range
+- `lo = 1`
+- `hi = max(piles)`
+
+Then search for the **leftmost feasible** speed.
+
+```python
+import math
+
+def min_eating_speed(piles: list[int], h: int) -> int:
+    def feasible(k: int) -> bool:
+        hours = 0
+        for p in piles:
+            hours += math.ceil(p / k)
+        return hours <= h
+
+    lo, hi = 1, max(piles)
+    while lo < hi:
+        mid = lo + (hi - lo) // 2
+        if feasible(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+```
+
+Complexity:
+- Feasibility check: `O(n)`
+- Binary search steps: `O(log max(piles))`
+- Total: `O(n log M)` where `M = max(piles)`
+
+## Interview narration that sounds senior
+
+Use this script:
+1. “I’ll binary-search the answer, not the array.”
+2. “Predicate is `feasible(k)`: can we finish within `h` hours at speed `k`?”
+3. “Feasibility is monotonic, so there’s a boundary from false to true.”
+4. “I’ll return the leftmost true value.”
+
+## Common mistakes
+
+1. **Returning `mid` early when feasible**
+   You still need to check smaller feasible candidates.
+
+2. **Using floating-point for hours**
+   Use integer ceil math (`(p + k - 1) // k`) or `math.ceil`; avoid precision issues.
+
+3. **Wrong search bounds**
+   If bounds don’t include the true answer, binary search quietly lies.
+
+Master this once, and you can reuse it for shipping capacity, minimum days, split array largest sum, and many “minimum X such that condition holds” problems.
+
+---
+
+# Page 9 — BFS for Shortest Path: Your Go-To for Unweighted Graphs
+
+When an interview problem asks for the **minimum number of moves/steps/hops** in an unweighted graph, default to BFS.
+
+That includes hidden graph problems like:
+- word ladder transformations
+- shortest path in a grid with walls
+- minimum bus transfers
+- minimum operations to reach a value
+
+If every edge has equal cost (usually 1), BFS gives shortest path length by construction.
+
+## Interview Case: Shortest Path in a Binary Matrix
+
+Typical prompt: given an `n x n` grid with `0` (open) and `1` (blocked), find shortest path length from top-left to bottom-right, moving in 8 directions.
+
+### 1) Why BFS (say this out loud)
+
+“Each move has uniform cost, so level-order traversal guarantees first time we reach target is shortest distance.”
+
+That sentence instantly signals algorithm selection skill.
+
+### 2) Core setup
+
+- Use a queue of states `(r, c, dist)`
+- Mark visited when enqueuing (not when dequeuing)
+- Expand neighbors within bounds, open, and unvisited
+
+Marking visited early avoids duplicate queue inserts and keeps complexity linear.
+
+```python
+from collections import deque
+
+def shortest_path_binary_matrix(grid):
+    n = len(grid)
+    if grid[0][0] == 1 or grid[n-1][n-1] == 1:
+        return -1
+
+    dirs = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
+    q = deque([(0, 0, 1)])
+    seen = {(0, 0)}
+
+    while q:
+        r, c, d = q.popleft()
+        if (r, c) == (n - 1, n - 1):
+            return d
+
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < n and 0 <= nc < n and grid[nr][nc] == 0 and (nr, nc) not in seen:
+                seen.add((nr, nc))
+                q.append((nr, nc, d + 1))
+
+    return -1
+```
+
+Complexity:
+- Time: `O(V + E)` (grid version is `O(n²)`)
+- Space: `O(V)` for queue + visited
+
+## Common mistakes interviewers look for
+
+1. **Using DFS for shortest path in unweighted graph**
+   DFS can find a path, not guaranteed shortest.
+
+2. **Visited marked too late**
+   If you mark on pop, duplicates flood queue.
+
+3. **Distance bookkeeping bugs**
+   Either store `dist` in queue (clean) or process by levels consistently.
+
+## Reusable mental trigger
+
+When you hear “minimum steps” + “uniform move cost,” think:
+1. model as graph
+2. BFS from source
+3. first hit target = answer
+
+This one pattern solves a huge slice of medium graph/grid interview questions quickly and reliably.
