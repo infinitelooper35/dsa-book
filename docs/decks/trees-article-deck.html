@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trees — Article Walkthrough</title>
+<style>
+:root{--bg:#0a1022;--bg2:#151f3d;--text:#edf3ff;--muted:#a8bdea;--line:#2b3b71;--card:#0f1734;--accent:#63a8ff}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui;background:linear-gradient(145deg,var(--bg),var(--bg2));color:var(--text);overflow:hidden}
+.slide{display:none;width:100vw;height:100vh;padding:48px 56px} .slide.active{display:block;animation:fade .22s ease}
+.cover h1{font-size:clamp(38px,7vw,72px);line-height:1.05;margin:.2em 0}
+h2{font-size:clamp(30px,4.7vw,52px);margin:.1em 0 .25em;line-height:1.1} .sub{color:var(--muted);font-size:clamp(16px,2vw,23px)}
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start;margin-top:12px}
+ul{padding-left:1.2em;margin:0} li{font-size:clamp(20px,2.1vw,30px);line-height:1.35;margin:.38em 0}
+.viz{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:14px;min-height:280px}
+.v-caption{margin-top:12px;color:var(--muted);font-size:13px}
+.visual.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:6px} .visual.cells>div{border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center;font-weight:700}
+.visual.table>div{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0} .visual.table b{color:#cfe3ff}
+.visual.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px} .visual.grid>div{height:54px;border:1px solid var(--line);border-radius:8px} .visual.grid .hot{background:linear-gradient(180deg,var(--accent),#8ec4ff)}
+.visual.bars{display:grid;gap:8px} .visual.bars span{display:block;height:16px;background:linear-gradient(90deg,var(--accent),#8ec4ff);border-radius:999px}
+.visual.ring{height:180px;border-radius:50%;border:8px solid var(--accent);display:grid;place-items:center;font-weight:800;text-align:center;padding:20px}
+.badge{display:inline-block;border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px} .author{margin-top:22px;color:var(--muted);font-size:14px}
+.hud{position:fixed;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:8px} button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:8px 12px;font-weight:700}
+.counter{margin-left:auto;color:var(--muted);font-size:13px} .progress{width:170px;height:5px;background:#1e2a52;border-radius:999px;overflow:hidden} .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#9bcaff)}
+@media(max-width:1000px){.slide{padding:20px} .split{grid-template-columns:1fr} .viz{min-height:130px} li{font-size:23px}}
+@keyframes fade{from{opacity:.2;transform:translateY(5px)}to{opacity:1;transform:none}}
+</style></head>
+<body>
+
+    <section class="slide cover active">
+      <div class="badge">Article Deck</div>
+      <h1>Trees — Article Walkthrough</h1>
+      <p class="sub">Based on jamesperalta.com/learn/dsa/trees</p>
+      <ul><li>Trees are one of those data structures that feel simple at first — and then show up everywhere once you start building real systems or doing interviews.</li></ul>
+      <div class="author">By James Peralta</div>
+    </section>
+    
+    <section class="slide">
+      <h2>Trees</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Trees are one of those data structures that feel simple at first — and then show up everywhere once you start building real systems or doing interviews.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>What is a tree?</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>A tree is a hierarchical data structure that organizes data in a parent → child relationship.</li>
+<li>One node at the top (the root) - Children branch downward - Real-world examples: file systems, org charts, family trees</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Core vocabulary</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Node, root, edge, parent/child, leaf, subtree, ancestors/descendants, siblings, path.</li>
+<li>Interviewers expect fluency with this language.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Height vs depth</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Depth: distance from root down to a node - Height: longest path from node down to a leaf When people say tree height, they usually mean root height.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Trees are acyclic and connected</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Trees have no cycles and exactly one path between root and any node.</li>
+<li>These constraints separate trees from general graphs.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Balanced vs unbalanced</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Balanced trees preserve logarithmic behavior.</li>
+<li>Unbalanced trees can degrade to linked-list-like O(n) behavior.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Full vs complete binary trees</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Full: each node has 0 or 2 children - Complete: levels filled left-to-right except possibly the last Heaps rely on complete binary tree structure.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Defining a tree node</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>At the core, trees are nodes with pointers/references to children.</li>
+<li>Binary trees use left/right pointers; N-ary trees use a children list.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Depth-first search (DFS)</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>DFS explores depth before breadth.</li>
+<li>Pre-order: node → left → right - In-order: left → node → right - Post-order: left → right → node Complexity: O(n) time, O(h) space.</li></ul>
+        <aside class="viz">
+        <div class='visual table'>
+          <div><span>Indexing</span><b>O(1)</b></div>
+          <div><span>Append</span><b>O(1)*</b></div>
+          <div><span>Middle Insert</span><b>O(n)</b></div>
+          <div><span>Binary Search</span><b>O(log n)</b></div>
+        </div>
+        <p class='v-caption'>Complexity quick sheet</p>
+        </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Breadth-first search (BFS)</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>BFS processes level by level using a queue.</li>
+<li>Use for level-order traversal, shortest path in unweighted trees, min depth style questions.</li>
+<li>Complexity: O(n) time, O(w) space.</li></ul>
+        <aside class="viz">
+        <div class='visual table'>
+          <div><span>Indexing</span><b>O(1)</b></div>
+          <div><span>Append</span><b>O(1)*</b></div>
+          <div><span>Middle Insert</span><b>O(n)</b></div>
+          <div><span>Binary Search</span><b>O(log n)</b></div>
+        </div>
+        <p class='v-caption'>Complexity quick sheet</p>
+        </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Common tree variations</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Binary tree, N-ary tree, BST, Trie, Heap, Segment tree.</li>
+<li>Most advanced problems are DFS/BFS plus constraints.</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Know the common tree operations</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>Traversals: O(n) - Height/count nodes: O(n) - BST search/insert/delete: O(h) Balanced BSTs have h = O(log n), unbalanced can be O(n).</li></ul>
+        <aside class="viz">
+    <div class='visual bars'>
+      <span style='width:90%'></span>
+      <span style='width:70%'></span>
+      <span style='width:55%'></span>
+      <span style='width:35%'></span>
+    </div>
+    <p class='v-caption'>Section snapshot</p>
+    </aside>
+      </div>
+    </section>
+    
+    <section class="slide">
+      <h2>Final takeaway</h2>
+      <p class="sub">From article section</p>
+      <div class="split">
+        <ul><li>When a problem has hierarchy, nesting, or parent-child relationships, reach for trees.</li>
+<li>Master vocabulary + traversals + complexity tradeoffs.</li></ul>
+        <aside class="viz">
+        <div class='visual ring'><span>Master Fundamentals</span></div>
+        <p class='v-caption'>Arrays → patterns → advanced DSA</p>
+        </aside>
+      </div>
+    </section>
+    
+<div class="hud"><button id="p">← Prev</button><button id="n">Next →</button><div class="progress"><div id="b" class="bar"></div></div><div id="c" class="counter"></div></div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let i=0;const c=document.getElementById('c'),b=document.getElementById('b');
+function show(x){i=Math.max(0,Math.min(slides.length-1,x));slides.forEach((s,k)=>s.classList.toggle('active',k===i));c.textContent=`${i+1} / ${slides.length}`;b.style.width=`${((i+1)/slides.length)*100}%`;}
+document.getElementById('p').onclick=()=>show(i-1);document.getElementById('n').onclick=()=>show(i+1);
+window.addEventListener('keydown',e=>{if(['ArrowRight',' ','PageDown'].includes(e.key))show(i+1);if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);if(e.key==='Home')show(0);if(e.key==='End')show(slides.length-1);});
+let sx=0,sy=0;window.addEventListener('touchstart',e=>{const t=e.changedTouches[0];sx=t.clientX;sy=t.clientY;},{passive:true});
+window.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){dx<0?show(i+1):show(i-1)}},{passive:true});
+show(0);
+</script>
+</body></html>
