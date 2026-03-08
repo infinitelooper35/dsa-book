@@ -714,3 +714,81 @@ For shortest path questions:
 3. Negative edges present → Bellman-Ford (or detect cycle constraints)
 
 In interviews, this decision tree alone can save you minutes and prevent choosing the wrong pattern before you even code.
+
+
+---
+
+# Page 11 — Bellman-Ford: When Shortest Paths Can Go Negative
+
+Dijkstra is your default for weighted shortest paths — until a prompt introduces negative edges. The moment you hear “weights may be negative,” switch to Bellman-Ford.
+
+Use Bellman-Ford for:
+- shortest path with possible negative edge weights
+- detecting whether a negative cycle is reachable
+- interview prompts that ask if “arbitrage/profit loop” exists
+
+## Interview Case: Cheapest Path with Potential Discounts
+
+Prompt style: directed edges `(u, v, w)`, where `w` can be negative. Return shortest distance from `src` to all nodes, and report if a reachable negative cycle exists.
+
+### 1) Why Bellman-Ford (say this out loud)
+
+“Because edges can be negative, Dijkstra is not reliable. I’ll use Bellman-Ford, which relaxes all edges `V-1` times and then does one extra pass to detect a negative cycle.”
+
+That sentence signals algorithm selection + correctness reasoning.
+
+### 2) Core implementation
+
+```python
+def bellman_ford(n, edges, src):
+    INF = float('inf')
+    dist = [INF] * n
+    dist[src] = 0
+
+    # Relax all edges V-1 times
+    for _ in range(n - 1):
+        updated = False
+        for u, v, w in edges:
+            if dist[u] != INF and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                updated = True
+        if not updated:
+            break  # early stop
+
+    # One more pass: if anything improves, negative cycle reachable
+    has_neg_cycle = False
+    for u, v, w in edges:
+        if dist[u] != INF and dist[u] + w < dist[v]:
+            has_neg_cycle = True
+            break
+
+    return dist, has_neg_cycle
+```
+
+Complexity:
+- Time: `O(V * E)`
+- Space: `O(V)`
+
+## Common interview mistakes
+
+1. **Using Dijkstra anyway**  
+   If negatives exist, the greedy property breaks.
+
+2. **Forgetting reachability check**  
+   Use `dist[u] != INF` before relaxing, otherwise you “propagate” from unreachable nodes.
+
+3. **Skipping the extra cycle pass**  
+   Without pass `V`, you cannot prove a reachable negative cycle.
+
+4. **Overexplaining all-pairs**  
+   Stay scoped: Bellman-Ford is single-source. Don’t drift into Floyd-Warshall unless asked.
+
+## Fast decision script for shortest-path interviews
+
+1. Unweighted / equal cost → BFS  
+2. Weighted, non-negative → Dijkstra  
+3. Weighted with negatives → Bellman-Ford
+
+If asked what negative cycle means in practice: “There is no finite shortest path for nodes affected by that cycle, because cost can be reduced indefinitely.”
+
+That line usually earns instant interviewer confidence because it moves from algorithm mechanics to interpretation.
