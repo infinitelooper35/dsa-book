@@ -792,3 +792,89 @@ Complexity:
 If asked what negative cycle means in practice: “There is no finite shortest path for nodes affected by that cycle, because cost can be reduced indefinitely.”
 
 That line usually earns instant interviewer confidence because it moves from algorithm mechanics to interpretation.
+
+---
+
+# Page 12 — Floyd-Warshall: All-Pairs Shortest Paths in One Matrix
+
+Bellman-Ford solved single-source shortest paths with negative edges. Today’s jump is all-pairs: shortest path between every pair of nodes. In interviews, this usually appears as “you’ll answer many shortest-path queries on a dense graph.”
+
+When you hear **many queries + small/medium `n` + possible negative edges (but no negative cycles)**, think Floyd-Warshall.
+
+## Interview Case: Cheapest Route Between Any Two Cities
+
+Prompt style: `n` cities, weighted directed edges, answer `q` queries `(u, v)` for minimum cost.
+
+### 1) Why Floyd-Warshall (say this out loud)
+
+“I can precompute shortest paths between every pair in `O(n^3)` time using DP over intermediate nodes, then answer each query in `O(1)`.”
+
+That framing shows tradeoff awareness: expensive preprocess, instant queries.
+
+### 2) Core DP idea
+
+Let `dist[i][j]` be the shortest known distance from `i` to `j`.
+
+Initialize:
+- `dist[i][i] = 0`
+- `dist[u][v] = w` for each edge (keep smallest if multiple edges)
+- everything else = `INF`
+
+Transition:
+For each intermediate node `k`, try improving every pair `(i, j)` by going through `k`:
+
+`dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])`
+
+```python
+def floyd_warshall(n, edges):
+    INF = float('inf')
+    dist = [[INF] * n for _ in range(n)]
+
+    for i in range(n):
+        dist[i][i] = 0
+
+    for u, v, w in edges:
+        if w < dist[u][v]:
+            dist[u][v] = w
+
+    for k in range(n):
+        for i in range(n):
+            if dist[i][k] == INF:
+                continue
+            for j in range(n):
+                if dist[k][j] == INF:
+                    continue
+                cand = dist[i][k] + dist[k][j]
+                if cand < dist[i][j]:
+                    dist[i][j] = cand
+
+    neg_cycle = any(dist[i][i] < 0 for i in range(n))
+    return dist, neg_cycle
+```
+
+Complexity:
+- Time: `O(n^3)`
+- Space: `O(n^2)`
+
+## Common interview mistakes
+
+1. **Using it on huge `n`**  
+   If `n` is large (like `10^5`), this is dead on arrival.
+
+2. **Ignoring multi-edge initialization**  
+   Always store min weight for duplicate `(u, v)` edges.
+
+3. **Forgetting negative cycle check**  
+   If any `dist[i][i] < 0`, shortest paths are not well-defined for affected pairs.
+
+4. **Recomputing per query**  
+   The whole point is preprocess once, answer fast.
+
+## Quick shortest-path chooser (extended)
+
+- Single-source, unweighted → BFS  
+- Single-source, non-negative weights → Dijkstra  
+- Single-source, negative weights → Bellman-Ford  
+- All-pairs, many queries, moderate `n` → Floyd-Warshall
+
+In interviews, clearly stating this decision matrix often matters as much as the code.
