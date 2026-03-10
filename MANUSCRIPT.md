@@ -878,3 +878,90 @@ Complexity:
 - All-pairs, many queries, moderate `n` → Floyd-Warshall
 
 In interviews, clearly stating this decision matrix often matters as much as the code.
+
+---
+
+# Page 14 — Kruskal + Union-Find: Minimum Spanning Tree Under Interview Pressure
+
+We just finished shortest paths. Today, switch to a different graph objective: **connect all nodes with minimum total cost**. That is Minimum Spanning Tree (MST), and in interviews the most practical route is usually **Kruskal + Union-Find (DSU)**.
+
+Use this when the prompt sounds like: “Given `n` nodes and weighted edges, connect everything as cheaply as possible.”
+
+## Interview Case: Cheapest Way to Connect Offices
+
+You’re given `n` offices and possible cable links `(u, v, cost)`. Return the minimum cost to connect all offices, or `-1` if impossible.
+
+### 1) Say the strategy clearly
+
+“I’ll sort edges by cost ascending. I’ll greedily take an edge only if it connects two different components. Union-Find lets me detect cycles in near O(1).”
+
+That sentence signals both algorithm choice and data structure pairing.
+
+### 2) Why Kruskal works (quick proof flavor)
+
+Kruskal always chooses the cheapest edge that doesn’t create a cycle. By the cut property, the lightest edge crossing any cut is safe to include in some MST. So the greedy picks stay globally valid.
+
+### 3) Implementation template
+
+```python
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False
+        if self.rank[ra] < self.rank[rb]:
+            ra, rb = rb, ra
+        self.parent[rb] = ra
+        if self.rank[ra] == self.rank[rb]:
+            self.rank[ra] += 1
+        return True
+
+def kruskal_mst(n, edges):
+    edges.sort(key=lambda e: e[2])
+    dsu = DSU(n)
+    cost = used = 0
+
+    for u, v, w in edges:
+        if dsu.union(u, v):
+            cost += w
+            used += 1
+            if used == n - 1:
+                return cost
+
+    return -1
+```
+
+Complexity:
+- Sorting edges: `O(E log E)`
+- DSU ops: almost linear (`O(E α(N))`)
+- Overall: `O(E log E)`
+
+## Common interview mistakes
+
+1. **No connectivity check**  
+   If you used fewer than `n-1` edges, graph wasn’t fully connectable.
+
+2. **Cycle detection via DFS each time**  
+   Works but too slow; DSU is the intended interview tool.
+
+3. **Forgetting edge count early-stop**  
+   Stop at `n-1` accepted edges.
+
+4. **Mixing 1-indexed and 0-indexed nodes**  
+   Normalize inputs immediately.
+
+## MST chooser in 10 seconds
+
+- Edge list + easy sorting + sparse graph mindset → **Kruskal + DSU**
+- Dense graph + adjacency matrix style → **Prim**
+
+In interview rounds, Kruskal is often the fastest path to correct, explainable code.
