@@ -1131,3 +1131,83 @@ Use this script:
    Mention iterative DFS alternative if constraints are huge.
 
 Kahn and DFS topological sort are both valid. In interviews, pick the one you can explain and implement with fewer bugs. Usually, that’s the winning move.
+
+# Page 17 — Alien Dictionary: Topological Sort When the Graph Is Hidden in Strings
+
+Topological sort gets more interesting when the graph is not given directly. In interviews, a classic version is **Alien Dictionary**: you get a sorted list of words from an unknown language and must infer a valid character order.
+
+This tests whether you can build a graph from constraints, not just traverse one.
+
+## Interview Case
+
+Given `words` sorted lexicographically in an alien language, return a string representing one valid order of characters. If invalid, return `""`.
+
+Example:
+- `words = ["wrt", "wrf", "er", "ett", "rftt"]`
+- Output: `"wertf"` (one valid order)
+
+## 1) Build edges from adjacent words only
+
+Compare each adjacent pair `(w1, w2)`.
+Find the first index where characters differ:
+- if `w1[i] != w2[i]`, then `w1[i] -> w2[i]` is a required order edge.
+- stop after first difference (later chars don’t matter for lexicographic constraint).
+
+Critical invalid case:
+- if `w1` starts with `w2` and `len(w1) > len(w2)`, ordering is impossible (`"abc"` before `"ab"`). Return `""`.
+
+## 2) Run Kahn’s topological sort
+
+- Initialize indegree for **every character that appears** in input words.
+- Add edges and indegrees.
+- Queue all nodes with indegree 0.
+- Pop, append to output, decrement neighbors.
+- If output length < number of unique chars, there’s a cycle -> return `""`.
+
+```python
+from collections import defaultdict, deque
+
+def alien_order(words):
+    graph = defaultdict(set)
+    indeg = {c: 0 for w in words for c in w}
+
+    for i in range(len(words) - 1):
+        w1, w2 = words[i], words[i + 1]
+        m = min(len(w1), len(w2))
+
+        if len(w1) > len(w2) and w1[:m] == w2[:m]:
+            return ""
+
+        for j in range(m):
+            if w1[j] != w2[j]:
+                if w2[j] not in graph[w1[j]]:
+                    graph[w1[j]].add(w2[j])
+                    indeg[w2[j]] += 1
+                break
+
+    q = deque([c for c in indeg if indeg[c] == 0])
+    order = []
+
+    while q:
+        c = q.popleft()
+        order.append(c)
+        for nei in graph[c]:
+            indeg[nei] -= 1
+            if indeg[nei] == 0:
+                q.append(nei)
+
+    return "".join(order) if len(order) == len(indeg) else ""
+```
+
+## 3) What to say out loud
+
+“I’m deriving precedence edges from the first differing character of adjacent sorted words. Then I’ll run topological sort with cycle detection via processed-node count. I also handle the prefix-invalid case explicitly.”
+
+## 4) Common misses
+
+1. Comparing all pairs of words (unnecessary and risky). Adjacent pairs are enough.
+2. Forgetting to include isolated chars with no edges.
+3. Ignoring duplicate edge protection (`set`) and inflating indegrees.
+4. Missing prefix invalidation.
+
+This problem is interview gold because it combines parsing + graph reasoning. If you can do this cleanly, you signal strong algorithmic maturity.
