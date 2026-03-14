@@ -1211,3 +1211,86 @@ def alien_order(words):
 4. Missing prefix invalidation.
 
 This problem is interview gold because it combines parsing + graph reasoning. If you can do this cleanly, you signal strong algorithmic maturity.
+
+# Page 18 — Evaluate Division: Weighted Graphs for Ratio Queries
+
+After Alien Dictionary, stay in graph mode but switch from ordering to **equations as edges**. Interviewers love this one because it looks like math, but the solution is pure graph traversal.
+
+## Interview Case
+
+You’re given equations like:
+- `a / b = 2.0`
+- `b / c = 3.0`
+
+Then queries like:
+- `a / c` -> `6.0`
+- `c / a` -> `1/6`
+- `x / x` -> `-1.0` (if `x` never appeared)
+
+This is LeetCode’s **Evaluate Division** pattern.
+
+## 1) Build a weighted bidirectional graph
+
+Each variable is a node.
+For `a / b = k`:
+- add edge `a -> b` with weight `k`
+- add edge `b -> a` with weight `1/k`
+
+Why both directions? Because queries can go either way.
+
+```python
+from collections import defaultdict, deque
+
+def build_graph(equations, values):
+    g = defaultdict(list)
+    for (a, b), k in zip(equations, values):
+        g[a].append((b, k))
+        g[b].append((a, 1.0 / k))
+    return g
+```
+
+## 2) Answer each query with BFS/DFS path product
+
+For query `src / dst`:
+- if either node missing: `-1.0`
+- if `src == dst`: `1.0` (only if node exists)
+- otherwise traverse graph; multiply weights along path
+
+```python
+def query_ratio(g, src, dst):
+    if src not in g or dst not in g:
+        return -1.0
+    if src == dst:
+        return 1.0
+
+    q = deque([(src, 1.0)])
+    seen = {src}
+
+    while q:
+        node, prod = q.popleft()
+        if node == dst:
+            return prod
+        for nei, w in g[node]:
+            if nei not in seen:
+                seen.add(nei)
+                q.append((nei, prod * w))
+
+    return -1.0
+```
+
+Time complexity is `O(E + V)` per query in worst case. In interviews, that’s usually accepted unless query count is massive.
+
+## 3) What to say out loud
+
+“I’m modeling equations as a weighted graph. A division query is a path-product query. I’ll run BFS from source to destination and accumulate the multiplicative weight. Missing nodes or disconnected components return `-1.0`.”
+
+That explanation sounds senior because it separates **modeling** from **traversal**.
+
+## 4) Pitfalls interviewers wait for
+
+1. Forgetting reverse edges (`1/k`).
+2. Returning `1.0` for `x/x` even when `x` was never in equations.
+3. Not resetting `seen` per query.
+4. Trying to do algebraic substitution directly (messy and brittle).
+
+If they ask follow-up optimization, mention **Union-Find with weights** for faster repeated queries. But lead with weighted BFS/DFS first—it’s clearer, easier to code, and less bug-prone under pressure.
