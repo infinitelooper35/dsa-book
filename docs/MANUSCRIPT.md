@@ -1294,3 +1294,87 @@ That explanation sounds senior because it separates **modeling** from **traversa
 4. Trying to do algebraic substitution directly (messy and brittle).
 
 If they ask follow-up optimization, mention **Union-Find with weights** for faster repeated queries. But lead with weighted BFS/DFS first—it’s clearer, easier to code, and less bug-prone under pressure.
+
+# Page 19 — Evaluate Division Follow-Up: Weighted Union-Find for Fast Repeated Queries
+
+Yesterday’s BFS solution is the right first answer for **Evaluate Division**. But interviewers often ask the follow-up: “What if there are tons of queries?”
+
+That’s your cue to upgrade to **Weighted Union-Find (Disjoint Set Union)**.
+
+## When this upgrade is worth it
+
+Use weighted DSU when:
+- equations are mostly static,
+- query volume is high,
+- you want near-constant-time query checks.
+
+Instead of searching paths per query, we maintain connected components with ratio information compressed into parent pointers.
+
+## Core idea
+
+For each variable `x`:
+- `parent[x]` = representative parent
+- `weight[x]` = ratio from `x` to `parent[x]`
+
+After path compression, `weight[x]` effectively becomes ratio from `x` to root.
+
+If two variables share a root, then:
+
+`x / y = weight[x] / weight[y]`
+
+That is the entire query formula.
+
+## Python template
+
+```python
+class WeightedDSU:
+    def __init__(self):
+        self.parent = {}
+        self.weight = {}  # x / parent[x]
+
+    def add(self, x):
+        if x not in self.parent:
+            self.parent[x] = x
+            self.weight[x] = 1.0
+
+    def find(self, x):
+        if self.parent[x] != x:
+            p = self.parent[x]
+            root = self.find(p)
+            self.weight[x] *= self.weight[p]
+            self.parent[x] = root
+        return self.parent[x]
+
+    def union(self, a, b, k):  # a / b = k
+        self.add(a); self.add(b)
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return
+
+        # attach ra under rb
+        # need: (a/rootA) * (rootA/rootB) / (b/rootB) = k
+        # => rootA/rootB = k * weight[b] / weight[a]
+        self.parent[ra] = rb
+        self.weight[ra] = k * self.weight[b] / self.weight[a]
+
+    def query(self, a, b):
+        if a not in self.parent or b not in self.parent:
+            return -1.0
+        ra, rb = self.find(a), self.find(b)
+        if ra != rb:
+            return -1.0
+        return self.weight[a] / self.weight[b]
+```
+
+## Interview script (say this out loud)
+
+“I’ll model each equation as a union operation with multiplicative weights. `find` does path compression while preserving ratios to root. Then each query is O(alpha(n)) if both variables share the same root; otherwise `-1.0`.”
+
+## Common failure points
+
+1. Getting the union formula wrong (most common).
+2. Doing path compression but forgetting to update weights during compression.
+3. Returning `1.0` for unknown `x/x` (should still be `-1.0` if unseen).
+4. Recomputing BFS per query even after proposing DSU.
+
+Rule of thumb: start with weighted graph traversal for clarity, then switch to weighted DSU when the interviewer adds heavy-query constraints. That sequencing shows both practical judgment and depth.
