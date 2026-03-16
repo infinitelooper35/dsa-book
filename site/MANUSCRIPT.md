@@ -1378,3 +1378,83 @@ class WeightedDSU:
 4. Recomputing BFS per query even after proposing DSU.
 
 Rule of thumb: start with weighted graph traversal for clarity, then switch to weighted DSU when the interviewer adds heavy-query constraints. That sequencing shows both practical judgment and depth.
+
+---
+
+# Page 20 — Redundant Connection: Use DSU to Detect the First Cycle Edge
+
+
+Weighted DSU solved ratio queries yesterday. Today, keep the same data structure but switch to a different interview signal: **cycle detection in an undirected graph**.
+
+This is the classic **Redundant Connection** pattern.
+
+## Interview case
+
+You’re given `n` nodes and `n` edges for an undirected graph that started as a tree, then had one extra edge added. Return the edge that creates a cycle.
+
+Brute force is “remove each edge and test connectivity,” but that’s too slow and clunky under pressure. DSU is cleaner: as you process edges, if two endpoints are already in the same component, this edge is redundant.
+
+## Why this is interview-friendly
+
+- One pass through edges
+- Compact implementation
+- Easy correctness argument
+- Reusable for many graph questions
+
+Time is near-linear: `O(E * alpha(V))`.
+
+## Python template
+
+```python
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n + 1))
+        self.rank = [0] * (n + 1)
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False  # already connected -> cycle edge
+
+        if self.rank[ra] < self.rank[rb]:
+            ra, rb = rb, ra
+        self.parent[rb] = ra
+        if self.rank[ra] == self.rank[rb]:
+            self.rank[ra] += 1
+        return True
+
+
+def findRedundantConnection(edges):
+    n = len(edges)
+    dsu = DSU(n)
+
+    for u, v in edges:
+        if not dsu.union(u, v):
+            return [u, v]
+```
+
+## What to say out loud
+
+“I’ll treat each edge as a union attempt. If `find(u) == find(v)`, then `u` and `v` were already connected, so adding this edge creates a cycle. That edge is the redundant one.”
+
+This sounds strong because you’re stating the invariant: **each component is represented by one root**.
+
+## Common mistakes
+
+1. **Wrong DSU size assumption**
+   For this specific problem, labels are usually `1..n`, but in general graphs labels can be sparse. If labels aren’t guaranteed dense, map them first.
+
+2. **Skipping path compression/rank**
+   It may still pass small tests, but interviewers notice if you ignore standard DSU optimizations.
+
+3. **Mixing directed vs undirected logic**
+   This DSU approach is for undirected cycle detection. Directed “redundant connection II” is a different beast.
+
+## Practical pattern to remember
+
+When the prompt says “one extra edge,” “detect cycle edge,” or “dynamic connectivity,” think DSU before DFS. It’s usually shorter to code, easier to reason about, and more robust in a timed interview.
