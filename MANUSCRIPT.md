@@ -1458,3 +1458,93 @@ This sounds strong because you’re stating the invariant: **each component is r
 ## Practical pattern to remember
 
 When the prompt says “one extra edge,” “detect cycle edge,” or “dynamic connectivity,” think DSU before DFS. It’s usually shorter to code, easier to reason about, and more robust in a timed interview.
+
+
+---
+
+# Page 21 — Kruskal in Interviews: Build an MST with DSU
+
+Yesterday you used DSU to detect the first cycle edge. Today you’ll use the same primitive for a bigger interview pattern: **minimum spanning tree (MST)** with **Kruskal’s algorithm**.
+
+If a prompt says “connect all nodes with minimum total cost,” your brain should immediately test MST.
+
+## Interview case
+
+You’re given weighted edges between nodes. Connect every node so total cost is minimal, with no cycles.
+
+Kruskal’s idea is greedy and clean:
+1. Sort edges by cost ascending.
+2. Try to add each edge.
+3. If edge connects two different components, keep it.
+4. If it connects nodes already in the same component, skip (would form cycle).
+
+DSU gives you step 3/4 in near O(1).
+
+## Python template
+
+```python
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False
+        if self.rank[ra] < self.rank[rb]:
+            ra, rb = rb, ra
+        self.parent[rb] = ra
+        if self.rank[ra] == self.rank[rb]:
+            self.rank[ra] += 1
+        return True
+
+
+def kruskal_mst(n, edges):
+    # edges: (w, u, v)
+    edges.sort()
+    dsu = DSU(n)
+    total = 0
+    used = 0
+
+    for w, u, v in edges:
+        if dsu.union(u, v):
+            total += w
+            used += 1
+            if used == n - 1:
+                break
+
+    return total if used == n - 1 else -1
+```
+
+## What to say out loud
+
+“I sort all edges by weight, then greedily take the cheapest edge that connects two different components. DSU prevents cycles and tracks connectivity efficiently. We stop after selecting `n-1` edges.”
+
+That explanation shows both correctness intuition and implementation control.
+
+## Common interview traps
+
+1. **Forgetting disconnected graph handling**  
+   If you cannot pick `n-1` edges, MST doesn’t exist. Return `-1` (or follow prompt-specific behavior).
+
+2. **Wrong node indexing**  
+   Some questions use `1..n`, others `0..n-1`. Normalize once at input parse.
+
+3. **Not sorting the right tuple shape**  
+   Keep edge tuples as `(weight, u, v)` so default sort works and your loop stays readable.
+
+4. **Confusing Kruskal vs Prim**  
+   Kruskal = edge-sorted + DSU. Prim = grow from a node with heap.
+
+## Practical decision rule
+
+- Sparse edge list already provided? **Kruskal + DSU** is usually fastest to code in interviews.
+- Dense graph or adjacency-heavy setup? Prim may be cleaner.
+
+Kruskal is one of those patterns where “same DSU, different wrapper” unlocks a whole class of graph problems.
