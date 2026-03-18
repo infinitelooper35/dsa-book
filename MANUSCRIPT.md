@@ -1548,3 +1548,85 @@ That explanation shows both correctness intuition and implementation control.
 - Dense graph or adjacency-heavy setup? Prim may be cleaner.
 
 Kruskal is one of those patterns where “same DSU, different wrapper” unlocks a whole class of graph problems.
+
+---
+
+# Page 22 — Prim’s Algorithm: MST Without Sorting All Edges
+
+Yesterday you used Kruskal + DSU. Today you’ll lock in the other MST pattern interviewers love: **Prim’s algorithm**.
+
+Use Prim when the graph is already in adjacency-list form, or when you want to grow one connected component step by step instead of sorting every edge globally.
+
+## Interview case
+
+“Given `n` nodes and weighted connections, return the minimum cost to connect all nodes.”
+
+Prim’s idea:
+1. Start from any node (usually `0`).
+2. Push all outgoing edges into a min-heap.
+3. Repeatedly take the cheapest edge that reaches an unvisited node.
+4. Add that node, push its outgoing edges, continue until all nodes are visited.
+
+If you finish with fewer than `n` visited nodes, the graph is disconnected.
+
+## Python template
+
+```python
+import heapq
+
+def prim_mst(n, adj):
+    # adj[u] = [(v, weight), ...]
+    visited = [False] * n
+    min_heap = [(0, 0)]  # (cost, node)
+    total = 0
+    used_nodes = 0
+
+    while min_heap and used_nodes < n:
+        cost, u = heapq.heappop(min_heap)
+        if visited[u]:
+            continue
+
+        visited[u] = True
+        total += cost
+        used_nodes += 1
+
+        for v, w in adj[u]:
+            if not visited[v]:
+                heapq.heappush(min_heap, (w, v))
+
+    return total if used_nodes == n else -1
+```
+
+## What to say out loud
+
+“I’m building the MST incrementally from one start node. A min-heap always gives me the cheapest edge crossing from visited to unvisited nodes. I skip stale heap entries with `if visited[u]: continue`.”
+
+That line tells the interviewer you understand real heap behavior, not just textbook pseudocode.
+
+## Complexity you should quote
+
+- With adjacency list + binary heap: **O(E log V)** time
+- Space: **O(V + E)** for graph storage and heap growth
+
+In interviews, this is usually good enough. Don’t overcomplicate with Fibonacci heaps.
+
+## Common mistakes
+
+1. **Adding edge cost before visited check**
+   If you do that, duplicate heap entries can overcount total.
+
+2. **Forgetting disconnected graph check**
+   Always verify `used_nodes == n`.
+
+3. **Using adjacency matrix accidentally**
+   That often degrades to `O(V^2)` and is slower to code.
+
+4. **Pushing `(node, weight)` instead of `(weight, node)`**
+   Heap ordering breaks silently.
+
+## Kruskal vs Prim: quick interview choice
+
+- **Edge list given directly?** Start with **Kruskal**.
+- **Adjacency list / network expansion vibe?** Start with **Prim**.
+
+Both solve MST. Choosing the one that matches input shape is the practical interview move.
