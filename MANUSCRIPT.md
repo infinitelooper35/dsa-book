@@ -1630,3 +1630,95 @@ In interviews, this is usually good enough. Don’t overcomplicate with Fibonacc
 - **Adjacency list / network expansion vibe?** Start with **Prim**.
 
 Both solve MST. Choosing the one that matches input shape is the practical interview move.
+
+---
+
+## 2026-03-19
+
+# Page 23 — Dijkstra’s Algorithm: Shortest Path in Weighted Graphs (No Negative Edges)
+
+Now that you’ve seen MST patterns (Kruskal and Prim), the next interview graph staple is **single-source shortest path**.
+
+Use **Dijkstra’s algorithm** when:
+- edges have non-negative weights
+- you need shortest distance from one source to all nodes (or one target)
+
+If negative edges exist, call that out immediately and pivot to Bellman-Ford.
+
+## Interview case
+
+“Given `n` nodes and weighted directed edges, return the minimum cost from `src` to every node (or to `dst`).”
+
+Core idea:
+1. Keep `dist[]` initialized to infinity, except `dist[src] = 0`.
+2. Use a min-heap of `(distance_so_far, node)`.
+3. Pop the smallest distance candidate.
+4. Relax outgoing edges: if `d + w < dist[v]`, update and push new pair.
+
+This is the same stale-entry pattern as Prim: heap can contain old values, so guard with a skip check.
+
+## Python template
+
+```python
+import heapq
+
+
+def dijkstra(n, adj, src):
+    # adj[u] = [(v, w), ...]
+    INF = float('inf')
+    dist = [INF] * n
+    dist[src] = 0
+
+    heap = [(0, src)]  # (distance, node)
+
+    while heap:
+        d, u = heapq.heappop(heap)
+
+        # stale entry: we already found a better path
+        if d != dist[u]:
+            continue
+
+        for v, w in adj[u]:
+            nd = d + w
+            if nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(heap, (nd, v))
+
+    return dist
+```
+
+If the prompt asks for just one target, you can early-exit when you pop `dst` from heap (that’s the finalized shortest distance).
+
+## What to say out loud
+
+“I’m using a greedy frontier: the first time a node is popped with its current best distance, that distance is final because all edge weights are non-negative.”
+
+That sentence communicates the correctness condition interviewers care about.
+
+## Complexity to quote
+
+- Time: **O((V + E) log V)** with adjacency list + binary heap
+- Space: **O(V + E)**
+
+In sparse graphs, this is efficient and interview-friendly.
+
+## Common mistakes
+
+1. **Forgetting the non-negative requirement**
+   Dijkstra is invalid with negative edges.
+
+2. **Marking visited too early**
+   Don’t mark at push time. Distances can still improve before pop.
+
+3. **No stale-entry check**
+   Without it, code still works but does extra work; with bad “visited” logic it can break.
+
+4. **Overflow worries in other languages**
+   In Java/C++, use large sentinels carefully (`Long.MAX_VALUE` checks before add).
+
+## Prim vs Dijkstra mental model
+
+- **Prim:** minimize edge added to grow a tree.
+- **Dijkstra:** minimize total path distance from source.
+
+Both use min-heaps, but their optimization target is different. Say that clearly and you’ll sound like someone who understands graph algorithms, not someone reciting them.
