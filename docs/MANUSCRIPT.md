@@ -1722,3 +1722,87 @@ In sparse graphs, this is efficient and interview-friendly.
 - **Dijkstra:** minimize total path distance from source.
 
 Both use min-heaps, but their optimization target is different. Say that clearly and you’ll sound like someone who understands graph algorithms, not someone reciting them.
+
+
+---
+
+# Page 24 — Bellman-Ford: When Negative Edges Enter the Interview
+
+Dijkstra is fast, but it has a hard limit: **non-negative edge weights**.  
+The moment a prompt includes negative weights, your default shortest-path answer should switch to **Bellman-Ford**.
+
+Use Bellman-Ford when:
+- edges can be negative
+- you still need single-source shortest paths
+- you may need to detect a negative cycle
+
+## Interview case
+
+“Given `n` nodes and weighted directed edges, return shortest distances from `src`. If a negative cycle is reachable from `src`, report it.”
+
+Core idea:
+1. Initialize `dist[src] = 0`, everything else = infinity.
+2. Relax all edges `n - 1` times.
+3. Do one extra pass: if any edge can still relax, a reachable negative cycle exists.
+
+Why `n - 1` passes? Any simple shortest path has at most `n - 1` edges. Each pass lets paths with one more edge settle.
+
+## Python template
+
+```python
+def bellman_ford(n, edges, src):
+    # edges: list of (u, v, w)
+    INF = float('inf')
+    dist = [INF] * n
+    dist[src] = 0
+
+    # Relax edges up to n-1 times
+    for _ in range(n - 1):
+        updated = False
+        for u, v, w in edges:
+            if dist[u] != INF and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                updated = True
+        if not updated:  # early stop optimization
+            break
+
+    # Detect reachable negative cycle
+    for u, v, w in edges:
+        if dist[u] != INF and dist[u] + w < dist[v]:
+            return None, True  # distances invalid due to negative cycle
+
+    return dist, False
+```
+
+## What to say out loud
+
+“I’ll use Bellman-Ford because negative edges break Dijkstra’s greedy finalization rule. Bellman-Ford systematically relaxes all edges, and an extra pass detects reachable negative cycles.”
+
+That sentence signals you understand **algorithm selection**, not just implementation.
+
+## Complexity to quote
+
+- Time: **O(V × E)**
+- Space: **O(V)**
+
+It’s slower than Dijkstra, so say that proactively: “If weights were guaranteed non-negative, I’d prefer Dijkstra with a heap.”
+
+## Common mistakes
+
+1. **Forgetting reachability check (`dist[u] != INF`)**
+   Without it, you can incorrectly relax from unreachable nodes.
+
+2. **Skipping the extra pass**
+   Then you miss negative cycle detection, which interviewers often test.
+
+3. **Using Bellman-Ford when constraints are huge and non-negative**
+   Correct but suboptimal choice; mention Dijkstra alternative.
+
+## Dijkstra vs Bellman-Ford quick rule
+
+- **Non-negative weights** → Dijkstra
+- **Negative weights possible** → Bellman-Ford
+- **Need negative-cycle detection** → Bellman-Ford
+
+In interviews, this decision line is often more important than writing every line perfectly.
+
