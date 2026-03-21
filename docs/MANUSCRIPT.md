@@ -1806,3 +1806,85 @@ It’s slower than Dijkstra, so say that proactively: “If weights were guarant
 
 In interviews, this decision line is often more important than writing every line perfectly.
 
+
+
+## 2026-03-21
+
+# Page 25 — 0-1 BFS: Beat Dijkstra When Edge Weights Are Only 0 or 1
+
+After Bellman-Ford, here’s a high-value interview optimization most candidates miss: **0-1 BFS**.
+
+If a graph’s edge weights are only `0` or `1`, you don’t need a heap-based Dijkstra. You can get linear performance with a deque.
+
+Use this when prompts look like:
+- “minimum cost with free vs paid moves”
+- “grid where some moves cost 0, others cost 1”
+- “reverse edges costs 1, forward edges costs 0”
+
+## Interview case
+
+You’re in a grid. Moving into a cell with the suggested direction costs `0`; changing direction costs `1`. Find minimum cost to reach bottom-right.
+
+This is a shortest-path problem with non-negative weights, so Dijkstra works. But because weights are only `0/1`, 0-1 BFS is cleaner and often faster.
+
+## Core idea
+
+Maintain `dist[node]` and a deque:
+- if relaxing an edge of weight `0`, push neighbor to the **front**
+- if weight `1`, push to the **back**
+
+Why this works: deque order preserves the same processing guarantee as a min-priority queue for binary weights.
+
+```python
+from collections import deque
+
+def zero_one_bfs(n, adj, src):
+    # adj[u] = [(v, w)] where w in {0, 1}
+    INF = 10**18
+    dist = [INF] * n
+    dist[src] = 0
+
+    dq = deque([src])
+
+    while dq:
+        u = dq.popleft()
+        for v, w in adj[u]:
+            nd = dist[u] + w
+            if nd < dist[v]:
+                dist[v] = nd
+                if w == 0:
+                    dq.appendleft(v)
+                else:
+                    dq.append(v)
+
+    return dist
+```
+
+Complexity:
+- Time: `O(V + E)`
+- Space: `O(V)`
+
+That beats Dijkstra’s `O((V+E) log V)` when the 0/1 constraint applies.
+
+## What to say out loud
+
+“I’d normally use Dijkstra, but edge weights are binary (0 or 1), so I can use 0-1 BFS with a deque. Zero-cost relaxations go to the front, one-cost relaxations go to the back, which maintains nondecreasing distance processing.”
+
+That answer usually stands out because it shows constraint-driven optimization.
+
+## Common mistakes
+
+1. **Using normal BFS**  
+   Regular BFS assumes all edges same weight; it fails for mixed 0 and 1.
+
+2. **Still using a heap by habit**  
+   Correct but slower and more code.
+
+3. **Forgetting multiple relaxations**  
+   A node can be improved later through a zero-cost path; always compare `nd < dist[v]`.
+
+4. **Applying 0-1 BFS to weights like `{0,2}`**  
+   Not valid. The trick is specific to binary edge weights.
+
+Interview shortcut: if weights are exactly `0/1`, reach for deque before heap.
+
