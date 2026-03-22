@@ -1888,3 +1888,96 @@ That answer usually stands out because it shows constraint-driven optimization.
 
 Interview shortcut: if weights are exactly `0/1`, reach for deque before heap.
 
+
+## 2026-03-22
+
+# Page 26 — Bidirectional BFS: Cut Search Space for Word Ladder-Style Problems
+
+After 0-1 BFS, here’s another interview optimization that’s easy to explain and high impact: **bidirectional BFS**.
+
+Use it when:
+- the graph is unweighted,
+- you need shortest path length,
+- and both start and target are known.
+
+Classic trigger: **Word Ladder**.
+
+## Interview case
+
+Given `beginWord`, `endWord`, and a dictionary, return the minimum number of one-letter transformations needed to reach `endWord`, changing one character at a time, and each intermediate word must exist in the dictionary.
+
+Regular BFS works, but can explode when branching factor is high. Bidirectional BFS searches from both ends and meets in the middle.
+
+## Why this is faster
+
+If branching factor is `b` and distance is `d`:
+- one-direction BFS explores about `b^d`
+- bidirectional BFS explores roughly `2 * b^(d/2)`
+
+In interviews, you don’t need a formal proof—just say: “meeting in the middle shrinks the frontier depth on both sides.”
+
+## Implementation template
+
+```python
+def ladder_length(begin, end, word_list):
+    words = set(word_list)
+    if end not in words:
+        return 0
+
+    front = {begin}
+    back = {end}
+    visited = {begin, end}
+    steps = 1
+
+    while front and back:
+        # always expand smaller frontier
+        if len(front) > len(back):
+            front, back = back, front
+
+        nxt = set()
+        for w in front:
+            arr = list(w)
+            for i in range(len(arr)):
+                orig = arr[i]
+                for c in "abcdefghijklmnopqrstuvwxyz":
+                    if c == orig:
+                        continue
+                    arr[i] = c
+                    cand = "".join(arr)
+
+                    if cand in back:
+                        return steps + 1
+                    if cand in words and cand not in visited:
+                        visited.add(cand)
+                        nxt.add(cand)
+                arr[i] = orig
+
+        front = nxt
+        steps += 1
+
+    return 0
+```
+
+Complexity depends on dictionary size and word length, but in practice this is often much faster than one-sided BFS for deep paths.
+
+## What to say out loud
+
+“I’ll use bidirectional BFS because this is an unweighted shortest-path problem with known source and target. I’ll expand the smaller frontier each round to reduce branching, and stop when the frontiers intersect.”
+
+That line signals optimization judgment, not just implementation ability.
+
+## Common mistakes
+
+1. **Expanding only one side by habit**
+   Then you lose the whole benefit.
+
+2. **Not swapping to smaller frontier**
+   Performance can degrade significantly.
+
+3. **Incorrect step counting when frontiers meet**
+   Be explicit about what `steps` represents.
+
+4. **Forgetting to restore modified character in loops**
+   Causes silent string-generation bugs.
+
+Interview shortcut: when you hear “shortest transformations between two known states,” test bidirectional BFS before coding plain BFS.
