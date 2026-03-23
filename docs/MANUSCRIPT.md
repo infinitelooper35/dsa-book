@@ -1981,3 +1981,90 @@ That line signals optimization judgment, not just implementation ability.
    Causes silent string-generation bugs.
 
 Interview shortcut: when you hear “shortest transformations between two known states,” test bidirectional BFS before coding plain BFS.
+
+
+## 2026-03-23
+
+# Page 27 — Dijkstra in Interviews: Shortest Path on Weighted Graphs (No Negative Edges)
+
+After bidirectional BFS, the next step is handling **weighted** shortest-path problems where edge costs are not just 0/1. The interview default here is **Dijkstra’s algorithm**.
+
+Use it when:
+- graph edges have non-negative weights,
+- you need shortest distance from one source,
+- and BFS no longer works because weights differ.
+
+If you hear “minimum total cost,” “cheapest route,” or “time to reach each node” with non-negative weights, think Dijkstra immediately.
+
+## Interview case
+
+Given `n` nodes and weighted edges, return the shortest distance from source `s` to target `t`.
+
+## Core idea (what to say)
+
+“Maintain best-known distances. Always expand the node with the smallest current distance using a min-heap. If we pop a stale entry, skip it.”
+
+That one sentence communicates both correctness and implementation detail.
+
+## Python template
+
+```python
+import heapq
+
+
+def dijkstra(n, adj, s):
+    INF = 10**18
+    dist = [INF] * n
+    dist[s] = 0
+
+    pq = [(0, s)]  # (distance, node)
+
+    while pq:
+        d, u = heapq.heappop(pq)
+
+        # stale heap entry; better path already found
+        if d != dist[u]:
+            continue
+
+        for v, w in adj[u]:
+            nd = d + w
+            if nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))
+
+    return dist
+```
+
+Complexity:
+- Time: `O((V + E) log V)`
+- Space: `O(V + E)`
+
+In interviews, that complexity statement is enough unless asked to derive.
+
+## Fast decision table
+
+- Unweighted graph → BFS
+- Weights only `0/1` → 0-1 BFS (deque)
+- Non-negative weights → Dijkstra
+- Negative weights exist → Bellman-Ford / SPFA discussion
+
+Saying this table out loud shows strong algorithm selection judgment.
+
+## Common mistakes
+
+1. **Using plain BFS on weighted edges**  
+   Gives wrong answers when edge costs differ.
+
+2. **Marking node “visited” too early**  
+   With heap-based Dijkstra, rely on `if d != dist[u]: continue` instead.
+
+3. **Forgetting directed vs undirected handling**  
+   For undirected graphs, add both directions in adjacency.
+
+4. **Ignoring overflow / large INF choice**  
+   Use a safely large sentinel (`10**18` in Python).
+
+5. **Trying Dijkstra with negative edges**  
+   It can silently fail; call this out explicitly to the interviewer.
+
+Interview shortcut: when the problem says “shortest path” and costs are non-negative, start from Dijkstra template, then adapt output (single target, all nodes, or path reconstruction).
