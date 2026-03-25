@@ -2156,3 +2156,82 @@ When you finish the cost-only version, proactively say:
 “Want me to add path reconstruction with a parent array?”
 
 That single sentence often turns a passable solution into a strong one.
+
+# Page 29 — 0-1 BFS: Faster Than Dijkstra When Edge Weights Are Only 0 or 1
+
+Dijkstra is the default for weighted shortest path, but interviews love this twist:
+
+“Each edge weight is either `0` or `1`. Find shortest path from `s`.”
+
+If you still run heap-based Dijkstra, it works—but you miss an optimization signal. The better answer is **0-1 BFS** with a deque.
+
+## When to use it
+
+Use 0-1 BFS when:
+- graph can be directed or undirected
+- edge weights are strictly in `{0, 1}`
+- you need single-source shortest distances (or distance to one target)
+
+Time complexity becomes **`O(V + E)`**, better than Dijkstra’s `O((V + E) log V)`.
+
+## Core idea
+
+Maintain `dist[]` and a deque `dq`.
+
+When relaxing edge `u -> v` with weight `w`:
+- if `w == 0`, push `v` to the **front** (`appendleft`)
+- if `w == 1`, push `v` to the **back** (`append`)
+
+Why this works: nodes reached with no extra cost should be processed earlier, preserving increasing-distance order without a heap.
+
+## Python template
+
+```python
+from collections import deque
+
+
+def zero_one_bfs(n, adj, s):
+    INF = 10**18
+    dist = [INF] * n
+    dist[s] = 0
+
+    dq = deque([s])
+
+    while dq:
+        u = dq.popleft()
+
+        for v, w in adj[u]:
+            nd = dist[u] + w
+            if nd < dist[v]:
+                dist[v] = nd
+                if w == 0:
+                    dq.appendleft(v)
+                else:  # w == 1
+                    dq.append(v)
+
+    return dist
+```
+
+## Interview framing (say this out loud)
+
+“I’d normally use Dijkstra for non-negative weights. Since weights are only 0/1, I can replace the heap with a deque. Zero-cost relaxations go to front, one-cost relaxations to back, giving linear `O(V+E)`.”
+
+That explanation signals pattern recognition and constraint-driven optimization.
+
+## Common pitfalls
+
+1. **Using a visited set too early**
+   - Don’t mark a node permanently visited on first pop; a better route can still appear via a `0` edge.
+   - Guard with `if nd < dist[v]` relaxations.
+
+2. **Applying it to weights like `{0,2}` or `{1,2}`**
+   - Not valid. Use Dijkstra (or transform carefully if problem allows).
+
+3. **Forgetting path reconstruction**
+   - Same as Dijkstra: keep `parent[v] = u` on improvement, then backtrack.
+
+## Drill prompt
+
+Given a grid where moving into a free cell costs `0` and breaking a wall costs `1`, find the minimum walls to break from top-left to bottom-right.
+
+If you instantly think “0-1 BFS on implicit graph,” you’re interview-ready for this pattern.
