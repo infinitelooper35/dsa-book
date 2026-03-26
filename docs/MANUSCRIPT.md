@@ -2235,3 +2235,88 @@ That explanation signals pattern recognition and constraint-driven optimization.
 Given a grid where moving into a free cell costs `0` and breaking a wall costs `1`, find the minimum walls to break from top-left to bottom-right.
 
 If you instantly think “0-1 BFS on implicit graph,” you’re interview-ready for this pattern.
+
+## 2026-03-26
+
+# Page 30 — Multi-Source BFS: Nearest Distance Problems Without Repeating Work
+
+After 0-1 BFS, here’s another interview pattern that saves both time and code: **multi-source BFS**.
+
+Use it when the prompt asks for each cell/node’s distance to the *nearest* target (gate, zero, hospital, treasure, etc.). If you run BFS from every starting node, you’ll usually time out. The better move is to reverse the thinking: start from all targets at once.
+
+## Interview case
+
+Given a grid with:
+- `0` = gate
+- `-1` = wall
+- `INF` = empty room
+
+Fill each empty room with distance to its nearest gate.
+
+This is the classic “Walls and Gates” pattern.
+
+## Core insight
+
+All edges have equal weight (1 step), so BFS gives shortest path. If we push **all gates** into the queue initially, BFS expands in layers from every gate simultaneously. The first time a room is reached is guaranteed to be its nearest gate distance.
+
+That avoids repeated searches and naturally resolves nearest-source competition.
+
+## Python template
+
+```python
+from collections import deque
+
+
+def walls_and_gates(rooms):
+    if not rooms or not rooms[0]:
+        return
+
+    m, n = len(rooms), len(rooms[0])
+    q = deque()
+
+    # Seed queue with all sources (gates)
+    for r in range(m):
+        for c in range(n):
+            if rooms[r][c] == 0:
+                q.append((r, c))
+
+    dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+    while q:
+        r, c = q.popleft()
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            if not (0 <= nr < m and 0 <= nc < n):
+                continue
+            if rooms[nr][nc] != 2147483647:  # not INF (wall/gate/already set)
+                continue
+
+            rooms[nr][nc] = rooms[r][c] + 1
+            q.append((nr, nc))
+```
+
+Complexity:
+- Time: `O(m * n)`
+- Space: `O(m * n)` in worst case queue
+
+## What to say out loud
+
+“I’ll run multi-source BFS by enqueueing all gates first. Since BFS processes by distance layers in an unweighted grid, the first time we set an empty room is its minimum distance to any gate.”
+
+That sentence shows correctness reasoning, not just implementation.
+
+## Common mistakes
+
+1. **Running BFS from each empty room**
+   Correct but too slow (`O((mn)^2)` in dense cases).
+
+2. **Using DFS for shortest distance**
+   DFS does not guarantee shortest path in unweighted graphs.
+
+3. **Overwriting non-INF cells**
+   Walls and gates should stay unchanged.
+
+4. **Forgetting boundary checks**
+   Grid bugs here are common under pressure.
+
+Interview trigger to memorize: if many starts share the same shortest-path objective, push all starts first and run one BFS.
