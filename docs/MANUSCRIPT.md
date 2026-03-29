@@ -2491,3 +2491,77 @@ Complexity:
 4. Assuming this works for weight `2+` (it doesn’t).
 
 Interview trigger: if prompt says “minimum cost/path” and costs are strictly `{0,1}`, think **0-1 BFS** before Dijkstra.
+
+# Page 33 — Monotonic Deque: Sliding Window Max in O(n)
+
+Yesterday you used 0-1 BFS to optimize weighted traversal. Today we switch to arrays and interview speed: **Monotonic Deque** for sliding windows.
+
+This pattern solves “best value in every moving window” without recomputing from scratch.
+
+## Interview case
+
+Given `nums` and window size `k`, return an array where each element is the maximum of the current window.
+
+Example: `nums = [1,3,-1,-3,5,3,6,7], k = 3` → `[3,3,5,5,6,7]`
+
+Brute force is easy: for each start index, scan `k` elements.
+- Time: `O(n*k)`
+- Space: `O(1)` extra
+
+For large `k`, this is too slow. Optimized answer is **O(n)** with a deque of indices.
+
+## Core invariant
+
+Keep deque indices in **decreasing value order**.
+- Front (`dq[0]`) always points to the max in current window.
+- Before pushing index `i`, pop from back while `nums[back] <= nums[i]`.
+- Also pop from front if it falls out of window (`<= i-k`).
+
+Each index enters and leaves deque once → linear time.
+
+## Python template
+
+```python
+from collections import deque
+
+
+def max_sliding_window(nums, k):
+    dq = deque()   # stores indices, values decreasing
+    out = []
+
+    for i, x in enumerate(nums):
+        # 1) remove indices out of this window
+        while dq and dq[0] <= i - k:
+            dq.popleft()
+
+        # 2) maintain decreasing order by value
+        while dq and nums[dq[-1]] <= x:
+            dq.pop()
+
+        dq.append(i)
+
+        # 3) record answer once first full window forms
+        if i >= k - 1:
+            out.append(nums[dq[0]])
+
+    return out
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(k)` (deque size bounded by window)
+
+## What to say out loud
+
+“I’ll use a monotonic decreasing deque of indices. The front is always the max candidate for the current window. I evict stale indices from the front and weaker candidates from the back before adding each new index.”
+
+That explanation demonstrates you understand **why** it’s O(n), not just memorized code.
+
+## Common mistakes
+
+1. Storing values instead of indices (can’t detect expiration cleanly).
+2. Forgetting to evict out-of-window indices before reading answer.
+3. Using `<` instead of `<=` when popping from back, which mishandles duplicates policy.
+4. Appending result before window reaches size `k`.
+
+Interview trigger: phrases like “for each contiguous window” + “max/min quickly” should immediately suggest **monotonic deque**.
