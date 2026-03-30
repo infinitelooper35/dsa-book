@@ -2565,3 +2565,74 @@ That explanation demonstrates you understand **why** it’s O(n), not just memor
 4. Appending result before window reaches size `k`.
 
 Interview trigger: phrases like “for each contiguous window” + “max/min quickly” should immediately suggest **monotonic deque**.
+
+---
+
+## 2026-03-30
+
+# Page 34 — Monotonic Stack: Largest Rectangle in Histogram
+
+Yesterday you used a monotonic deque for sliding-window maximum. Today we stay in the same family but switch to **monotonic stack**, one of the highest-yield interview tools.
+
+Classic prompt: given `heights[]` of bars in a histogram (width = 1), return the area of the largest rectangle.
+
+Example: `heights = [2,1,5,6,2,3]` → answer is `10` (bars 5 and 6, width 2).
+
+## Why brute force fails
+
+A straightforward attempt picks every bar as the minimum height, then expands left/right until a smaller bar appears.
+- Time: `O(n^2)` in worst case
+- Too slow for large `n`
+
+The optimized pattern is `O(n)` using an **increasing stack of indices**.
+
+## Core invariant
+
+Keep stack indices so heights are strictly increasing by value.
+- When current height is **smaller** than the stack top height, you found the right boundary for the top bar.
+- Pop that index, compute area with:
+  - `height = heights[popped]`
+  - `right = i`
+  - `left = stack[-1]` after pop (or `-1` if empty)
+  - `width = right - left - 1`
+
+Each index is pushed once and popped once → linear time.
+
+## Python template
+
+```python
+def largest_rectangle_area(heights):
+    stack = []  # increasing heights' indices
+    best = 0
+
+    for i, h in enumerate(heights + [0]):  # sentinel flushes stack
+        while stack and heights[stack[-1]] > h:
+            idx = stack.pop()
+            height = heights[idx]
+            left = stack[-1] if stack else -1
+            width = i - left - 1
+            best = max(best, height * width)
+
+        stack.append(i)
+
+    return best
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(n)` stack worst case
+
+## What to say out loud
+
+“I maintain an increasing stack of bar indices. When I see a shorter bar, I pop taller bars and compute the maximum rectangle where each popped bar is the limiting height. The current index is the first smaller bar on the right; the new stack top is the first smaller bar on the left.”
+
+That explanation usually lands because it proves you understand boundaries, not just memorized code.
+
+## Common mistakes
+
+1. **Forgetting the sentinel `0`** and missing rectangles that end at array tail.
+2. **Using `>=` vs `>` blindly** in the pop condition; both can work, but be consistent with duplicate handling.
+3. **Storing heights instead of indices**, which makes width computation awkward.
+4. **Wrong width formula** (`i - left - 1` is the key line).
+
+Interview trigger: if prompt says “nearest smaller to left/right”, “span”, or “largest area with contiguous bars,” think **monotonic stack** immediately.
