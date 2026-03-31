@@ -2636,3 +2636,79 @@ That explanation usually lands because it proves you understand boundaries, not 
 4. **Wrong width formula** (`i - left - 1` is the key line).
 
 Interview trigger: if prompt says “nearest smaller to left/right”, “span”, or “largest area with contiguous bars,” think **monotonic stack** immediately.
+
+---
+
+## 2026-03-31
+
+# Page 35 — Monotonic Stack II: Daily Temperatures (Next Greater Element)
+
+Yesterday’s histogram problem trained you to pop when the current value breaks monotonic order. Today we apply the same reflex to a more interview-common prompt:
+
+Given `temps[]`, return an array `ans[]` where `ans[i]` is how many days until a warmer temperature. If none exists, `ans[i] = 0`.
+
+Example:
+`temps = [73,74,75,71,69,72,76,73]`
+`ans   = [1,1,4,2,1,1,0,0]`
+
+## Why this is a stack problem
+
+Brute force checks each day against all future days until a warmer one appears.
+- Time: `O(n^2)` worst case
+- Easy, but too slow at scale
+
+We need to answer “who is the next greater element to my right?” quickly. That’s exactly what a **monotonic decreasing stack** does.
+
+## Core invariant
+
+Store indices in a stack such that temperatures at those indices are decreasing.
+- If current day is warmer than stack top day, we just found the answer for that top day.
+- Pop it and set distance: `i - popped_index`.
+- Keep popping while current temp is warmer.
+- Push current index.
+
+Each index is pushed once and popped once → `O(n)`.
+
+## Python template
+
+```python
+def daily_temperatures(temps):
+    n = len(temps)
+    ans = [0] * n
+    st = []  # indices, temps[st] is decreasing
+
+    for i, t in enumerate(temps):
+        while st and temps[st[-1]] < t:
+            j = st.pop()
+            ans[j] = i - j
+        st.append(i)
+
+    return ans
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(n)` stack in worst-case decreasing array
+
+## What to say in an interview
+
+“I’ll maintain a decreasing stack of unresolved indices. When I see a warmer temperature, I resolve all colder days on top by popping and writing the distance. Unresolved days remain for future iterations.”
+
+This signals that you understand *resolution events*, not just syntax.
+
+## Common mistakes
+
+1. **Pushing values instead of indices** (then you can’t compute day distance).
+2. **Using `<=` instead of `<`** in the while condition. Equal temperature is not warmer.
+3. Forgetting default zeros for days with no warmer future day.
+4. Off-by-one in distance formula (`i - j`, not `i - j - 1`).
+
+## Pattern expansion
+
+This template generalizes to:
+- Next greater element
+- Stock span (variant)
+- Waiting days / wait times
+- Any “first future index meeting condition” prompt
+
+Interview trigger: if prompt says “next warmer/greater to the right,” immediately think **monotonic stack of indices**.
