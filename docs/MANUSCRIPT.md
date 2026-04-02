@@ -2797,3 +2797,79 @@ That line tells the interviewer you understand **candidate maintenance**, not ju
 4. Appending answer before window is full.
 
 Mental trigger: when prompt says “for every window/subarray of size k, report best value,” think **monotonic deque** immediately.
+---
+
+## 2026-04-02
+
+# Page 37 — Sliding Window Median: Two Heaps + Lazy Deletion
+
+Sliding window maximum used a monotonic deque because we only needed one extreme (max). But interviewers often level it up:
+
+Given `nums` and window size `k`, return the **median** of each window.
+
+Example:
+`nums = [1,3,-1,-3,5,3,6,7], k = 3`
+Medians: `[1,-1,-1,3,5,6]`
+
+Now deque won’t help, because median depends on *order statistics*, not just max/min. The practical interview pattern is **two heaps + lazy deletion**.
+
+## Data structure design
+
+Maintain:
+- `small`: max-heap (store negatives) for lower half
+- `large`: min-heap for upper half
+- `delayed`: hashmap `value -> count` for elements that slid out but are still sitting on a heap top later
+
+Balance rule:
+- `len(small)` is either equal to `len(large)` or exactly one larger.
+- Median:
+  - odd `k`: top of `small`
+  - even `k`: average of tops of both heaps
+
+## Why lazy deletion?
+
+Python heaps can remove top in `O(log n)`, but removing an arbitrary outgoing value is expensive. So when a value exits the window, mark it in `delayed`. Whenever that value reaches a heap top, pop and decrement delayed count. This keeps each element pushed/popped a constant number of times.
+
+## Interview-safe template (core shape)
+
+```python
+import heapq
+from collections import defaultdict
+
+class DualHeap:
+    def __init__(self, k):
+        self.small, self.large = [], []
+        self.delayed = defaultdict(int)
+        self.k = k
+        self.small_size = 0
+        self.large_size = 0
+
+    def median(self):
+        if self.k % 2:
+            return float(-self.small[0])
+        return (-self.small[0] + self.large[0]) / 2.0
+
+    # add(num), remove(num), prune(heap), rebalance() omitted for brevity
+```
+
+In a real interview, say: “I’ll use two heaps for halves and lazy deletion to support window removals efficiently.” Then implement helper methods cleanly.
+
+## Complexity
+
+- Each insert/remove/rebalance step: `O(log k)`
+- Total: `O(n log k)`
+- Extra space: `O(k)`
+
+## Mistakes that fail test cases
+
+1. Not tracking **logical sizes** (`small_size`, `large_size`) separately from heap array length.
+2. Forgetting to prune invalid tops before reading median.
+3. Rebalancing only once when loops may be needed.
+4. Integer division bug on even `k` median.
+
+## Pattern trigger
+
+If you hear “median for a moving/sliding window,” your reflex should be:
+**two heaps + lazy deletion**, not sorting every window.
+
+That’s the difference between `O(nk log k)` brute-force-ish thinking and interview-grade `O(n log k)` design.
