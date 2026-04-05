@@ -3043,3 +3043,85 @@ That line shows algorithmic judgment, not just coding speed.
 4. Forgetting this mutates the input array (mention if that matters).
 
 Interview trigger: if prompt asks for one element by rank, think **Quickselect before full sort**.
+
+## 2026-04-05
+
+# Page 40 — Top K Frequent Elements: Pick the Right Tool Fast
+
+Quickselect solved “one rank” selection. A very common follow-up is:
+
+“Return the `k` most frequent elements.”
+
+This is a great interview filter because there are multiple valid solutions, and the best answer depends on constraints.
+
+## Interview case
+
+Given `nums` and integer `k`, return any order of the `k` most frequent values.
+
+Example:
+`nums = [1,1,1,2,2,3], k = 2` → `[1,2]`
+
+## Step 1: frequency map (always)
+
+No matter what strategy you choose, first count frequencies:
+
+```python
+from collections import Counter
+freq = Counter(nums)
+```
+
+Now you have `m = len(freq)` unique elements.
+
+## Strategy A (default): min-heap of size k
+
+Use this when you want the most interview-safe balance of clarity + performance.
+
+1. Iterate `(num, count)` in `freq.items()`.
+2. Push `(count, num)` into a min-heap.
+3. If heap size exceeds `k`, pop smallest count.
+4. Remaining heap contains top `k` frequent.
+
+```python
+import heapq
+from collections import Counter
+
+
+def top_k_frequent(nums, k):
+    freq = Counter(nums)
+    heap = []
+
+    for num, count in freq.items():
+        heapq.heappush(heap, (count, num))
+        if len(heap) > k:
+            heapq.heappop(heap)
+
+    return [num for count, num in heap]
+```
+
+Complexity:
+- Build counts: `O(n)`
+- Heap ops over `m` uniques: `O(m log k)`
+- Space: `O(m)` for map, `O(k)` heap
+
+## Strategy B: bucket sort (when interviewer pushes for linear)
+
+If counts are at most `n`, build buckets by frequency index:
+- `buckets[c]` stores numbers with count `c`.
+- Walk buckets from high frequency down until you collect `k` numbers.
+
+This is `O(n)` time on paper, but code is longer and easier to bug under pressure.
+
+## What to say out loud
+
+“I’ll count with a hash map first. Then I’ll keep only the best `k` using a min-heap, so I avoid sorting all uniques. That gives `O(n + m log k)` and stays clean to implement.”
+
+That statement communicates prioritization, not just memorization.
+
+## Common mistakes
+
+1. Sorting all frequency pairs immediately (`O(m log m)`) when `k` is small.
+2. Building a max-heap of all elements instead of trimming to size `k`.
+3. Returning counts instead of elements.
+4. Forgetting ties can be returned in any order unless prompt says otherwise.
+
+Pattern trigger: when you hear “top K” + “frequency,” think **Counter + bounded min-heap** first, then mention bucket sort as optimization.
