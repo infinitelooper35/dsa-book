@@ -3125,3 +3125,88 @@ That statement communicates prioritization, not just memorization.
 4. Forgetting ties can be returned in any order unless prompt says otherwise.
 
 Pattern trigger: when you hear “top K” + “frequency,” think **Counter + bounded min-heap** first, then mention bucket sort as optimization.
+
+## 2026-04-06
+
+# Page 41 — Find Median from Data Stream: Two Heaps, No Panic
+
+Top K Frequent trains your heap instincts. The next classic interview upgrade is dynamic statistics:
+
+“Numbers come one by one. After each insert, return the median.”
+
+If you try sorting every time, you’ll time out (`O(n log n)` per insert). The winning pattern is **two heaps**.
+
+## Interview case
+
+Design `MedianFinder` with:
+- `addNum(num)`
+- `findMedian()`
+
+Operations should be efficient across many inserts.
+
+## Core idea
+
+Maintain two halves of the stream:
+- `small`: max-heap for the lower half
+- `large`: min-heap for the upper half
+
+Python only has min-heap, so simulate max-heap with negatives in `small`.
+
+Invariants to enforce after every insert:
+1. Size balance: `len(small)` is either equal to `len(large)` or exactly 1 bigger.
+2. Order: every value in `small` <= every value in `large`.
+
+If those invariants hold, median is always at the top(s).
+
+## Python template
+
+```python
+import heapq
+
+
+class MedianFinder:
+    def __init__(self):
+        self.small = []  # max-heap via negatives
+        self.large = []  # min-heap
+
+    def addNum(self, num: int) -> None:
+        # 1) push into small first
+        heapq.heappush(self.small, -num)
+
+        # 2) fix ordering: max(small) should not exceed min(large)
+        if self.large and -self.small[0] > self.large[0]:
+            x = -heapq.heappop(self.small)
+            heapq.heappush(self.large, x)
+
+        # 3) rebalance sizes
+        if len(self.small) > len(self.large) + 1:
+            heapq.heappush(self.large, -heapq.heappop(self.small))
+        elif len(self.large) > len(self.small):
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+
+    def findMedian(self) -> float:
+        if len(self.small) > len(self.large):
+            return float(-self.small[0])
+        return (-self.small[0] + self.large[0]) / 2.0
+```
+
+Complexity:
+- `addNum`: `O(log n)`
+- `findMedian`: `O(1)`
+- Space: `O(n)`
+
+## What to say out loud
+
+“I’ll split numbers into lower and upper halves using two heaps. I keep them balanced in size and ordered across heaps, so median is either one root or average of both roots.”
+
+That answer signals data-structure design skill, not brute-force coding.
+
+## Common mistakes
+
+1. Forgetting Python max-heap simulation (`-num`).
+2. Rebalancing sizes but not fixing cross-heap ordering.
+3. Returning integer division for even count (use float).
+4. Letting `large` grow bigger than `small` without moving one back.
+
+Pattern trigger: when input is a **stream** and prompt asks for **running median**, think **two heaps immediately**.
+
