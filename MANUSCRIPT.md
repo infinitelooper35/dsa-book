@@ -3441,3 +3441,73 @@ If they ask “can you do better?” you can add: “Yes—bucket by frequency f
 4. Mixing up `n` (array length) with `u` (unique count) in complexity.
 
 Interview pattern recognition: whenever prompt says “top-k by metric,” think **frequency map + bounded heap** before anything else.
+
+
+---
+
+# Page 45 — Kth Largest Element: Heap First, Quickselect If Pressed
+
+Yesterday’s page focused on Top K Frequent with a bounded min-heap. Today we apply that same decision skill to another staple:
+
+“Find the kth largest element in an unsorted array.”
+
+This question is less about code length and more about choosing the right tradeoff fast.
+
+## Interview decision tree (use this out loud)
+
+1. If you want safest implementation: **min-heap of size `k`**
+2. If interviewer asks for better average complexity: **Quickselect**
+3. If `k` is tiny relative to `n`, heap is often the most practical choice
+
+Start with heap unless explicitly pushed. It’s harder to break under pressure.
+
+## Approach A — Min-heap of size `k` (default)
+
+Keep only the `k` largest values seen so far:
+- push each number into a min-heap
+- if heap size exceeds `k`, pop once
+- final heap top is kth largest
+
+```python
+import heapq
+
+def find_kth_largest(nums, k):
+    heap = []
+    for x in nums:
+        heapq.heappush(heap, x)
+        if len(heap) > k:
+            heapq.heappop(heap)
+    return heap[0]
+```
+
+Complexity:
+- Time: `O(n log k)`
+- Space: `O(k)`
+
+Why interviewers like this: concise, predictable, and easy to reason about.
+
+## Approach B — Quickselect (follow-up)
+
+Quickselect partitions around a pivot and only recurses into the side containing the target index.
+For kth largest, target index is:
+`target = len(nums) - k` (0-based in sorted ascending order).
+
+Average complexity is `O(n)`, but worst-case is `O(n^2)` without good pivot strategy (randomization helps).
+
+Use this when interviewer says something like:
+“Can you do better than `O(n log k)`?”
+
+## What to say in the room
+
+“I’ll start with a size-`k` min-heap for a robust `O(n log k)` solution. If you want better average time, I can switch to randomized Quickselect with expected `O(n)`.”
+
+That sentence shows practical judgment and algorithm depth.
+
+## Common mistakes
+
+1. Mixing up kth **largest** vs kth **smallest** index conversion.
+2. Using full sort by default and never discussing better options.
+3. Returning the last popped value instead of current heap root.
+4. Forgetting Quickselect mutates the input array (mention if immutability matters).
+
+Pattern memory: when a prompt asks for one ranked element, choose between **bounded heap** (safer) and **Quickselect** (faster average) based on interview constraints.
