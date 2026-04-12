@@ -3597,3 +3597,84 @@ This shows algorithmic control, not memorization.
 - Need better average time and interviewer pushes optimization: Quickselect (expected `O(n)`).
 
 If you can explain that tradeoff clearly, you’re already performing at a strong mid-to-senior interview level.
+
+# Page 47 — Median from Data Stream: Two Heaps, One Clean Invariant
+
+Quickselect is great when you need one answer once. But interviews often follow up with a harder variant:
+
+“Numbers arrive continuously. Return the median at any time.”
+
+Now you need **online updates**, not a one-shot selection. The interview-safe solution is two heaps.
+
+## When to choose this pattern
+
+Use two heaps when the prompt includes:
+- “stream” or “real-time inserts”
+- “query median repeatedly”
+- dynamic rank around the middle
+
+## Core design
+
+Maintain:
+- `low`: max-heap for the smaller half
+- `high`: min-heap for the larger half
+
+Python only has min-heap, so simulate max-heap by storing negatives in `low`.
+
+### Invariants (say these out loud)
+
+1. **Order invariant**: every value in `low` `<=` every value in `high`
+2. **Size invariant**: `len(low)` is either equal to `len(high)` or exactly one larger
+
+If these two invariants hold, median is always:
+- odd count: top of `low`
+- even count: average of tops of `low` and `high`
+
+## Interview-safe implementation (Python)
+
+```python
+import heapq
+
+class MedianFinder:
+    def __init__(self):
+        self.low = []   # max-heap via negatives
+        self.high = []  # min-heap
+
+    def add_num(self, x: int) -> None:
+        heapq.heappush(self.low, -x)
+
+        # enforce order invariant
+        if self.high and -self.low[0] > self.high[0]:
+            v = -heapq.heappop(self.low)
+            heapq.heappush(self.high, v)
+
+        # enforce size invariant
+        if len(self.low) < len(self.high):
+            heapq.heappush(self.low, -heapq.heappop(self.high))
+        elif len(self.low) > len(self.high) + 1:
+            heapq.heappush(self.high, -heapq.heappop(self.low))
+
+    def find_median(self) -> float:
+        if len(self.low) > len(self.high):
+            return float(-self.low[0])
+        return (-self.low[0] + self.high[0]) / 2.0
+```
+
+Complexity:
+- `add_num`: `O(log n)`
+- `find_median`: `O(1)`
+
+## What interviewers are checking
+
+- Can you pick the right data structure for incremental queries?
+- Can you maintain invariants after each update?
+- Can you avoid off-by-one balancing bugs?
+
+## Common mistakes
+
+1. Rebalancing only once and forgetting order correction.
+2. Letting `high` become larger than `low` when using the “low has extra” convention.
+3. Returning int median for even count (must be float unless spec says otherwise).
+4. Forgetting negatives in max-heap simulation.
+
+If you frame this as “two invariants, then constant-time median,” the solution sounds calm and senior—even under pressure.
