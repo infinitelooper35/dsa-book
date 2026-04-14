@@ -3758,3 +3758,79 @@ class DualHeap:
 - Rebalancing before classifying the remove side
 
 If you frame this as “two heaps, delayed deletes, strict invariants,” you turn a scary hard problem into a controlled systems design exercise.
+
+# Page 49 — Sliding Window Maximum: Monotonic Deque (The Pattern Interviewers Expect)
+
+After sliding window median (two heaps + lazy deletion), the most common follow-up is easier and faster: **Sliding Window Maximum**.
+
+If you answer this with “I’ll scan each window,” you get `O(nk)`. For interviews, the target is `O(n)` using a **monotonic deque**.
+
+## The mental model
+
+Keep a deque of **indices**, not values. Maintain it so values are in **decreasing order** from front to back.
+
+That gives you two superpowers:
+1. Front of deque is always the max index for current window.
+2. Every index enters and leaves the deque at most once → linear time.
+
+## Invariants (say these out loud)
+
+At index `i`:
+1. Remove indices from front if they’re out of window (`<= i-k`).
+2. Remove indices from back while `nums[back] <= nums[i]` (they can never be future max).
+3. Push `i`.
+4. When `i >= k-1`, answer is `nums[dq[0]]`.
+
+If you communicate these invariants cleanly, the interviewer usually stops worrying about correctness.
+
+## Interview-grade Python
+
+```python
+from collections import deque
+
+def max_sliding_window(nums, k):
+    if not nums or k == 0:
+        return []
+
+    dq = deque()   # stores indices, values strictly decreasing
+    out = []
+
+    for i, x in enumerate(nums):
+        # 1) Drop out-of-window indices
+        while dq and dq[0] <= i - k:
+            dq.popleft()
+
+        # 2) Drop weaker candidates
+        while dq and nums[dq[-1]] <= x:
+            dq.pop()
+
+        # 3) Add current index
+        dq.append(i)
+
+        # 4) Record max once first window is formed
+        if i >= k - 1:
+            out.append(nums[dq[0]])
+
+    return out
+```
+
+## Complexity you should state
+
+- Time: `O(n)` (each index pushed once, popped once)
+- Space: `O(k)` for the deque
+
+## Common mistakes under pressure
+
+1. Storing values instead of indices (can’t evict expired elements reliably).
+2. Forgetting to evict expired indices before reading max.
+3. Using `<` instead of `<=` in the back-pop condition and leaving stale duplicates that complicate reasoning.
+4. Off-by-one on window start (`i >= k-1`).
+
+## Follow-up angle (good signal)
+
+Mention this is a general **monotonic queue** pattern:
+- window max (decreasing deque),
+- window min (increasing deque),
+- often paired with “longest subarray within limit” style constraints.
+
+That shows you didn’t memorize one problem—you learned a reusable tool.
