@@ -3909,3 +3909,76 @@ def longest_subarray(nums, limit):
 3. Updating `best` before restoring validity.
 
 This pattern is a top-tier signal: you can maintain dynamic constraints, not just run static scans.
+
+---
+
+# Page 51 — Shortest Subarray With Sum at Least K: Prefix Sum + Monotonic Deque
+
+Yesterday we used two monotonic deques to keep a window valid. Today’s twist is a classic hard interview problem where a normal sliding window fails because numbers can be negative.
+
+Problem (LeetCode 862 style):
+Given `nums` (can include negatives) and integer `k`, return the length of the shortest non-empty subarray with sum `>= k`. Return `-1` if none exists.
+
+If all numbers were non-negative, two pointers would work. But negatives break that monotonic growth, so we switch to **prefix sums + deque**.
+
+## Core transformation
+
+Let `P[i]` = sum of first `i` elements (`P[0] = 0`).
+Subarray sum `nums[j..i-1] = P[i] - P[j]`.
+
+So at each `i`, we need an earlier `j` with:
+
+`P[i] - P[j] >= k`  →  `P[j] <= P[i] - k`
+
+We want the **largest j possible** that still satisfies this (to minimize length `i - j`), and we need to find candidates fast.
+
+## Deque invariants
+
+Store indices of prefix sums in deque `dq` such that prefix values are increasing:
+- `P[dq[0]] < P[dq[1]] < ...`
+
+For each `i`:
+1. While current prefix minus front prefix is `>= k`, update answer with `i - dq[0]` and pop front (that front can’t give a shorter answer later).
+2. While deque back has prefix `>= P[i]`, pop back (current index dominates it: smaller/equal prefix at a later index is always better).
+3. Push `i`.
+
+That’s the whole algorithm.
+
+## Interview-grade Python
+
+```python
+from collections import deque
+
+def shortest_subarray(nums, k):
+    n = len(nums)
+    pref = [0] * (n + 1)
+    for i in range(n):
+        pref[i + 1] = pref[i] + nums[i]
+
+    dq = deque()
+    ans = n + 1
+
+    for i in range(n + 1):
+        while dq and pref[i] - pref[dq[0]] >= k:
+            ans = min(ans, i - dq.popleft())
+
+        while dq and pref[dq[-1]] >= pref[i]:
+            dq.pop()
+
+        dq.append(i)
+
+    return ans if ans <= n else -1
+```
+
+## Complexity (state clearly)
+
+- Time: `O(n)` (each index enters/leaves deque at most once)
+- Space: `O(n)` for prefix sums + deque
+
+## What interviewers watch for
+
+1. You explicitly say why normal sliding window fails with negatives.
+2. You derive the prefix condition (`P[i] - P[j] >= k`) out loud.
+3. You can justify both while-loops using dominance/invariant reasoning.
+
+If you do that, this “hard” problem becomes a structured pattern problem, not a brute-force panic moment.
