@@ -4190,3 +4190,73 @@ def shortest_subarray(nums, k):
 4. Returning 0 or `n+1` instead of `-1` when no valid subarray exists.
 
 Pattern memory: when you see “shortest/longest subarray with condition” and negatives are allowed, think **prefix sums + monotonic deque**, not classic window.
+
+# Page 55 — Subarray Sum Equals K (Prefix Sum + Frequency Map)
+
+Yesterday’s problem asked for the **shortest** subarray with sum at least `k` and needed a monotonic deque because negatives break window logic. Today’s classic is different:
+
+Given `nums` and `k`, return the **count** of subarrays whose sum equals `k`.
+
+This shows up constantly because it tests whether you can move from brute force to prefix-sum thinking fast.
+
+## Why sliding window fails
+
+If all numbers were non-negative, two pointers could work. But with negatives, expanding or shrinking doesn’t move the sum predictably. So the robust approach is prefix sums + hashmap.
+
+## Core idea
+
+Let running prefix be `pref`.
+At index `i`, we want number of earlier positions `j` such that:
+
+`pref[i] - pref[j] = k`  ->  `pref[j] = pref[i] - k`
+
+So while scanning left to right:
+1. Update `pref += nums[i]`
+2. Add `freq[pref - k]` to answer (how many valid starts exist)
+3. Record current prefix: `freq[pref] += 1`
+
+Initialize `freq[0] = 1` so subarrays starting at index 0 are counted.
+
+## Interview-grade Python
+
+```python
+from collections import defaultdict
+
+def subarray_sum(nums, k):
+    freq = defaultdict(int)
+    freq[0] = 1
+
+    pref = 0
+    ans = 0
+
+    for x in nums:
+        pref += x
+        ans += freq[pref - k]
+        freq[pref] += 1
+
+    return ans
+```
+
+## Walkthrough (quick)
+
+`nums = [1, 2, 3], k = 3`
+
+- Start: `pref=0`, `freq={0:1}`, `ans=0`
+- Read 1: `pref=1`, add `freq[-2]=0`, store `freq[1]=1`
+- Read 2: `pref=3`, add `freq[0]=1` -> `ans=1`, store `freq[3]=1`
+- Read 3: `pref=6`, add `freq[3]=1` -> `ans=2`, store `freq[6]=1`
+
+Valid subarrays: `[1,2]`, `[3]`.
+
+## What to say out loud in interviews
+
+“I’ll use a running prefix sum and a hashmap of prefix frequencies. At each index, the number of subarrays ending here with sum `k` is exactly how many times `prefix - k` has appeared before. That gives `O(n)` time and `O(n)` space.”
+
+## Mistakes to avoid
+
+1. Forgetting `freq[0] = 1` (misses subarrays starting at index 0).
+2. Updating `freq[pref]` **before** reading `freq[pref-k]` (can overcount current index).
+3. Trying sliding window with negatives.
+4. Confusing this with “longest subarray sum k” (same prefix tool, different bookkeeping).
+
+Pattern memory: if the prompt says **count subarrays with exact sum**, default to **prefix sum + frequency map**.
