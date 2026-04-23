@@ -4406,3 +4406,78 @@ Total = 7.
 “I’ll use prefix sums modulo `k`. If two prefixes have equal remainder, their difference is divisible by `k`, so that subarray qualifies. I’ll count prior equal remainders with a hashmap. Time `O(n)`, space `O(k)` in bounded remainder space, otherwise `O(n)`.”
 
 Pattern memory: **divisible subarray count** usually means **prefix sum + remainder frequency map**.
+
+
+## 2026-04-23
+
+# Page 58 — Longest Subarray Sum Divisible by K (Remainder Index Map)
+
+Yesterday we counted how many subarrays are divisible by `k`. Today’s common follow-up is different:
+
+Given `nums` and `k`, return the **length of the longest** subarray whose sum is divisible by `k`.
+
+This is where candidates accidentally reuse the frequency-map solution and get stuck. Counting and longest-length versions use different hash-map payloads.
+
+## Core shift
+
+For longest length, you don’t need “how many times” a remainder appears.
+You need the **earliest index** where each remainder first appeared.
+
+Why? If current prefix remainder is `r`, and you saw the same `r` at an earlier index `j`, then subarray `(j+1..i)` is divisible by `k`. To maximize length at `i`, use the earliest possible `j`.
+
+So store:
+- `first[r] = earliest index where remainder r appeared`
+
+Seed with `first[0] = -1` so subarrays starting at index 0 are handled.
+
+## Interview-grade Python
+
+```python
+def longest_subarray_div_by_k(nums, k):
+    first = {0: -1}
+    pref = 0
+    best = 0
+
+    for i, x in enumerate(nums):
+        pref += x
+        r = ((pref % k) + k) % k  # language-safe normalization
+
+        if r in first:
+            best = max(best, i - first[r])
+        else:
+            # keep earliest index only
+            first[r] = i
+
+    return best
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(min(n, k))` in practice, at most one entry per remainder
+
+## Quick walkthrough
+
+`nums = [2, 7, 6, 1, 4, 5], k = 3`
+
+Prefix remainders by index:
+- `i=0`: sum 2 → `r=2` (store `2:0`)
+- `i=1`: sum 9 → `r=0` (length `1 - (-1) = 2`)
+- `i=2`: sum 15 → `r=0` (length `2 - (-1) = 3`)
+- `i=3`: sum 16 → `r=1` (store `1:3`)
+- `i=4`: sum 20 → `r=2` (length `4 - 0 = 4`)
+- `i=5`: sum 25 → `r=1` (length `5 - 3 = 2`)
+
+Best is `4`, subarray `[7, 6, 1, 4]`.
+
+## What to say out loud
+
+“I’ll use prefix-sum modulo `k`. Equal remainders imply the subarray between those indices is divisible by `k`. For longest length, I store the first index of each remainder and never overwrite it. Then each repeat remainder gives a candidate length in O(1).”
+
+## Common mistakes
+
+1. Using remainder frequency map (that solves counting, not longest).
+2. Overwriting first-seen remainder indices (shrinks answer).
+3. Forgetting `first[0] = -1`.
+4. Ignoring modulo normalization in C++/Java with negatives.
+
+Pattern memory: **divisible + longest** usually means **remainder → earliest index map**.
