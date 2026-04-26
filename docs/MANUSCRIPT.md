@@ -4642,3 +4642,86 @@ Pattern memory:
 - **Count?** frequency map + combinational accumulation
 
 Same mathematical backbone, three interview variants.
+
+# Page 61 — Make It Streaming: Count Subarrays With Exactly K Odd Numbers
+
+You just practiced counting with prefix remainders. Today we apply the same “prefix + frequency” idea to another classic interview problem:
+
+Given `nums`, count subarrays that contain exactly `k` odd numbers.
+
+This is LeetCode 1248 (“Count Number of Nice Subarrays”), but interviewers care more about your transformation than the problem ID.
+
+## Transform first, solve second
+
+A subarray has exactly `k` odd numbers.
+Convert each value into parity:
+- odd -> `1`
+- even -> `0`
+
+Now the problem becomes:
+**Count subarrays with sum exactly `k`** on a 0/1 array.
+
+That is the same prefix-sum counting pattern you’ve already built.
+
+## Interview-grade Python
+
+```python
+from collections import defaultdict
+
+
+def count_nice_subarrays(nums, k):
+    freq = defaultdict(int)
+    freq[0] = 1  # empty prefix
+
+    pref = 0
+    ans = 0
+
+    for x in nums:
+        pref += (x & 1)      # add 1 if odd, else 0
+        ans += freq[pref - k]
+        freq[pref] += 1
+
+    return ans
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(n)` worst case
+
+## Why `ans += freq[pref - k]` works
+
+Let `P[i]` be prefix count of odd numbers up to index `i`.
+For subarray `(j+1..i)` to have exactly `k` odds:
+
+`P[i] - P[j] = k`  ->  `P[j] = P[i] - k`
+
+So when current prefix is `pref`, every previous prefix equal to `pref-k` creates one valid subarray ending at current index.
+
+Frequency map gives that count in O(1) average time.
+
+## Walkthrough mental model
+
+Example: `nums = [1, 1, 2, 1, 1]`, `k = 3`
+Parity stream: `[1, 1, 0, 1, 1]`
+Prefix odds:   `[1, 2, 2, 3, 4]`
+
+When `pref = 3`, look for `pref-k = 0` (one empty prefix) -> +1
+When `pref = 4`, look for `1` (appeared once) -> +1
+Total `2`.
+
+## Common interview mistakes
+
+1. **Brute force with nested loops**
+   Works but too slow (`O(n^2)`).
+
+2. **Forgetting `freq[0] = 1`**
+   Then you miss subarrays starting at index `0`.
+
+3. **Trying sliding window directly for “exactly k”**
+   Easier route is prefix+hashmap. (Window trick usually does `atMost(k) - atMost(k-1)`.)
+
+## What to say out loud
+
+“I’ll map each number to odd/even, reducing it to count subarrays with sum `k`. Then I use prefix sums and a frequency map: for each prefix `pref`, prior prefixes `pref-k` are exactly the valid starts.”
+
+This is interview leverage: once you can spot “transform into 0/1 + exact sum,” many array-counting questions collapse into one reusable template.
