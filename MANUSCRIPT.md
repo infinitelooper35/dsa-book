@@ -4725,3 +4725,101 @@ Total `2`.
 “I’ll map each number to odd/even, reducing it to count subarrays with sum `k`. Then I use prefix sums and a frequency map: for each prefix `pref`, prior prefixes `pref-k` are exactly the valid starts.”
 
 This is interview leverage: once you can spot “transform into 0/1 + exact sum,” many array-counting questions collapse into one reusable template.
+
+
+---
+
+## 2026-04-27
+
+# Page 62 — Exactly K Distinct: The `atMost(k) - atMost(k-1)` Interview Weapon
+
+Yesterday you counted “exactly `k` odds” using prefix frequencies. Today you’ll learn the other major “exactly `k`” pattern interviewers love:
+
+Given an array, count subarrays with **exactly `k` distinct values**.
+
+Directly enforcing “exactly” in one sliding window is messy. The practical move is:
+
+`exactly(k) = atMost(k) - atMost(k - 1)`
+
+Once you can compute `atMost(x)` fast, you get exact counts almost for free.
+
+## Step 1: Build `atMost(k)`
+
+For each right index, maintain a window `[left..right]` with at most `k` distinct numbers.
+If distinct count exceeds `k`, shrink from the left.
+
+When valid, how many subarrays end at `right`?
+Exactly `right - left + 1`.
+
+Why? Any start between `left` and `right` forms a valid ending-at-`right` subarray.
+
+## Interview-grade Python
+
+```python
+from collections import defaultdict
+
+
+def subarrays_with_k_distinct(nums, k):
+    return at_most(nums, k) - at_most(nums, k - 1)
+
+
+def at_most(nums, k):
+    if k < 0:
+        return 0
+
+    freq = defaultdict(int)
+    left = 0
+    distinct = 0
+    ans = 0
+
+    for right, x in enumerate(nums):
+        if freq[x] == 0:
+            distinct += 1
+        freq[x] += 1
+
+        while distinct > k:
+            y = nums[left]
+            freq[y] -= 1
+            if freq[y] == 0:
+                distinct -= 1
+            left += 1
+
+        ans += right - left + 1
+
+    return ans
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(n)` worst case
+
+## Example in 20 seconds
+
+`nums = [1,2,1,2,3], k = 2`
+
+- `atMost(2) = 12`
+- `atMost(1) = 5`
+- exactly 2 distinct = `12 - 5 = 7`
+
+That matches the known answer.
+
+## Common interview mistakes
+
+1. **Trying to count exactly `k` in one window directly**
+   Usually leads to corner-case bugs.
+
+2. **Forgetting `k < 0` guard in helper**
+   Needed when `k = 0` and you call `atMost(k-1)`.
+
+3. **Not decrementing distinct when frequency hits zero**
+   Then your window never truly shrinks.
+
+4. **Off-by-one in contribution**
+   It is `right - left + 1`, not `right - left`.
+
+## What to say out loud
+
+“I’ll avoid direct exact counting and use inclusion-exclusion: count subarrays with at most `k` distinct minus at most `k-1`. Each helper pass is a standard sliding window with frequency map, and each right pointer contributes window length.”
+
+This is a high-yield template. Same trick also appears in binary-string, character-replacement, and “exactly K constraint” variants.
+
