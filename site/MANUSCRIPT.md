@@ -4823,3 +4823,84 @@ That matches the known answer.
 
 This is a high-yield template. Same trick also appears in binary-string, character-replacement, and “exactly K constraint” variants.
 
+
+---
+
+# Page 63 — Monotonic Stack for Next Greater Element (Without Guesswork)
+
+You now have two elite counting patterns (prefix + sliding window). Today: a structure pattern that saves you from `O(n^2)` scans—**monotonic stack**.
+
+Classic interview prompt:
+“Given an array, find the next greater element to the right for every index. If none, return `-1`.”
+
+Example: `nums = [2, 1, 2, 4, 3]` → answer `[4, 2, 4, -1, -1]`
+
+## Why brute force loses
+
+For each index `i`, scan right until you find `nums[j] > nums[i]`.
+Worst-case (decreasing array): `O(n^2)`.
+
+Interviewers expect `O(n)` here.
+
+## The practical invariant
+
+Maintain a stack of **indices** whose next greater element is not found yet.
+Keep stack values **monotonically decreasing** (top is smallest among unresolved tail).
+
+As you move right with index `i`:
+- While stack not empty and `nums[i] > nums[stack[-1]]`, you just found the next greater for that top index.
+- Pop it and write answer.
+- Push `i` afterward.
+
+Each index is pushed once and popped once → total `O(n)`.
+
+## Interview-grade Python
+
+```python
+def next_greater_element(nums):
+    n = len(nums)
+    ans = [-1] * n
+    stack = []  # indices, nums[stack] strictly decreasing
+
+    for i, x in enumerate(nums):
+        while stack and x > nums[stack[-1]]:
+            j = stack.pop()
+            ans[j] = x
+        stack.append(i)
+
+    return ans
+```
+
+Complexity:
+- Time: `O(n)`
+- Space: `O(n)`
+
+## What to say out loud
+
+“I’ll use a decreasing monotonic stack of unresolved indices. When current value is bigger than stack top value, it becomes that top index’s next greater element. Because each index enters and leaves stack once, this is linear time.”
+
+That explanation signals both correctness and complexity intuition.
+
+## Common traps
+
+1. **Stack stores values, not indices**
+   Then you can’t place result in the correct answer slot cleanly.
+
+2. **Using `>=` instead of `>` without clarifying definition**
+   Prompt says *greater*, not *greater or equal*. Confirm explicitly.
+
+3. **Forgetting initialization with `-1`**
+   Unresolved indices at end should remain `-1`.
+
+4. **Claiming amortized `O(n)` but writing nested loops incorrectly**
+   The inner `while` is fine only because total pops across run are at most `n`.
+
+## Pattern extension (high yield)
+
+Same stack idea powers:
+- Next smaller element
+- Stock span
+- Daily temperatures
+- Largest rectangle in histogram
+
+If you spot “nearest greater/smaller to left/right,” think monotonic stack immediately. It’s one of the most reusable interview accelerators in DSA.
