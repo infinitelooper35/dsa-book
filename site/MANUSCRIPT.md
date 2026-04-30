@@ -4982,3 +4982,88 @@ Complexity:
 
 If you can explain *why popped elements are permanently useless*, interviewers know you understand the structure—not just memorized code.
 
+
+
+## 2026-04-30
+
+# Page 65 — Minimum Window Substring: Sliding Window with “Need” Accounting
+
+Yesterday’s page covered sliding-window maximum with a monotonic deque. Today we switch to a different high-frequency window pattern: **covering constraints**.
+
+Prompt style:
+Given strings `s` and `t`, return the smallest substring of `s` that contains all characters of `t` (including duplicates). If none exists, return `""`.
+
+Example:
+`s = "ADOBECODEBANC", t = "ABC"` → `"BANC"`
+
+## Why naive fails
+
+Brute force checks every substring and validates counts each time. That is too slow (`O(n^2)` substrings, expensive checks).
+
+The interview-grade solution is one pass with a dynamic window and frequency accounting.
+
+## Core model
+
+Build a frequency map `need` from `t`.
+Track:
+- `missing`: how many total required characters are still unmet
+- window boundaries `l`, `r`
+- best answer range
+
+As `r` expands:
+1. Decrement `need[s[r]]`.
+2. If that char was still needed (`need[s[r]] > 0` before decrement), reduce `missing`.
+
+When `missing == 0`, the window is valid. Now shrink from the left to find the minimum valid window:
+- update best answer
+- increment `need[s[l]]`
+- if it becomes positive, you just removed a required char, so `missing += 1` and stop shrinking
+
+That expand-then-contract loop gives linear time.
+
+## Interview-safe Python
+
+```python
+from collections import Counter
+
+def min_window(s: str, t: str) -> str:
+    if not s or not t:
+        return ""
+
+    need = Counter(t)
+    missing = len(t)
+    l = 0
+    best_len = float('inf')
+    best_l = 0
+
+    for r, ch in enumerate(s):
+        if need[ch] > 0:
+            missing -= 1
+        need[ch] -= 1
+
+        while missing == 0:
+            if r - l + 1 < best_len:
+                best_len = r - l + 1
+                best_l = l
+
+            need[s[l]] += 1
+            if need[s[l]] > 0:
+                missing += 1
+            l += 1
+
+    return "" if best_len == float('inf') else s[best_l:best_l + best_len]
+```
+
+## What to say out loud
+
+“I’ll use a sliding window with a required-frequency map. `missing` tells me when the window fully covers `t`. Once valid, I shrink left aggressively to keep only minimum-length valid windows.”
+
+## Common mistakes
+
+1. Tracking only set membership (fails when `t` has duplicates like `"AABC"`).
+2. Updating `missing` in the wrong order around count changes.
+3. Forgetting to shrink while valid (returns a valid window, not the minimum one).
+4. Off-by-one in substring slicing.
+
+Pattern trigger: when the prompt says **smallest/shortest substring containing requirements**, think **sliding window + frequency deficits**, not monotonic deque.
+
